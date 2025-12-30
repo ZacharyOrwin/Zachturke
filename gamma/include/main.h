@@ -43,6 +43,8 @@
 
 #include "bot_connections.hpp"
 #include "controls.hpp"
+#include "autonomous.hpp"
+#include "properties.hpp"
 
 /**
  * If you find doing pros::Motor() to be tedious and you'd prefer just to do

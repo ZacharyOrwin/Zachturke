@@ -1,20 +1,5 @@
 #include "main.h"
 
-/**
- * A callback function for LLEMU's center button.
- *
- * When this callback is fired, it will toggle line 2 of the LCD text between
- * "I was pressed!" and nothing.
- */
-void on_center_button() {
-	static bool pressed = false;
-	pressed = !pressed;
-	if (pressed) {
-		pros::lcd::set_text(2, "I was pressed!");
-	} else {
-		pros::lcd::clear_line(2);
-	}
-}
 
 /**
  * Runs initialization code. This occurs as soon as the program is started.
@@ -24,10 +9,6 @@ void on_center_button() {
  */
 void initialize() {
 	pros::lcd::initialize();
-	pros::lcd::set_text(1, "Hello PROS User!");
-
-	pros::lcd::register_btn1_cb(on_center_button);
-
 	BotConnections::initialize();
 }
 
@@ -60,7 +41,18 @@ void competition_initialize() {}
  * will be stopped. Re-enabling the robot will restart the task, not re-start it
  * from where it left off.
  */
-void autonomous() {}
+void autonomous() {
+	// Code snippet of routine being created and inserted in list of routines.
+	std::shared_ptr<Autonomous::Routine> routine;
+	routine.get() -> first = "First Routine!";
+	routine.get() -> second.push_back(std::make_unique<Autonomous::Align>(Autonomous::Align::Config{}));
+	Autonomous::routines.push_back(routine);
+
+	// Code snippet of the first routine's action being taken out and inserted into another list.
+	std::vector<std::unique_ptr<Autonomous::Action>> grab;
+	grab.push_back(std::move(routine.get() -> second.at(0)));
+	routine.get() -> second.pop_back();
+}
 
 /**
  * Runs the operator control code. This function will be started in its own task
@@ -77,7 +69,7 @@ void autonomous() {}
  */
 void opcontrol() {
 	while (true) {
-		pros::delay(10);
+		pros::delay(Properties::TICK_DELAY_MSEC);
 
 		Controls::processLeftJoystick();
 		Controls::processRightJoystick();
