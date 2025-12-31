@@ -44,14 +44,20 @@ void competition_initialize() {}
 void autonomous() {
 	// Code snippet of routine being created and inserted in list of routines.
 	std::shared_ptr<Autonomous::Routine> routine;
-	routine.get() -> first = "First Routine!";
-	routine.get() -> second.push_back(std::make_unique<Autonomous::Align>(Autonomous::Align::Config{}));
+	routine->first = "First Routine!";
+	routine->second.push(std::make_shared<Autonomous::Align>(Autonomous::Align::Config{}));
 	Autonomous::routines.push_back(routine);
 
-	// Code snippet of the first routine's action being taken out and inserted into another list.
-	std::vector<std::unique_ptr<Autonomous::Action>> grab;
-	grab.push_back(std::move(routine.get() -> second.at(0)));
-	routine.get() -> second.pop_back();
+	// AUTONOMOUS START.
+	Autonomous::initialize_actions_queue();
+
+	while (true) {
+		pros::delay(Properties::TICK_DELAY_MSEC);
+
+		if (Autonomous::run_action_ticks() == Autonomous::ACTIONS_UNBLOCKED) {
+			Autonomous::start_next_action();
+		}
+	}
 }
 
 /**
@@ -68,6 +74,7 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 void opcontrol() {
+	// CONTROLS START.
 	while (true) {
 		pros::delay(Properties::TICK_DELAY_MSEC);
 

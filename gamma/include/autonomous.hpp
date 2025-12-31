@@ -5,54 +5,70 @@
 
 
 namespace Autonomous {
-        struct Action {
-                float time = 0;
-                bool blocking = true;
+	enum ActionRunStatus {
+		ACTION_RUN_ONGOING,
+		ACTION_RUN_COMPLETE
+	};
+	enum ActionsBlockingStatus {
+		ACTIONS_BLOCKED,
+		ACTIONS_UNBLOCKED
+	};
 
-                virtual void run_tick() = 0;
-        };
+	struct KBA {
+		float k;
+		float b;
+		float a;
 
-        struct Align : public Action {
-                struct Config {
-                        float K;
-                        float B;
-                        float A;
-                        float angle;
-                        float epsilon;
-                        float timeout;
-                };
+		float output(float t) {
+			return std::min(std::max(t*k, a), b);
+		}
+	};
 
-                Config c;
+	struct Action {
+		float time = 0;
+		bool blocking = true;
 
-                Align(Config c);
-                void run_tick() override;
-        };
+		virtual ~Action() = default;
+		virtual ActionRunStatus run_tick() = 0;
+	};
 
-        struct Travel : public Action {
-                struct Config {
-                        float K;
-                        float B;
-                        float A;
-                        float dist;
-                        float epsilon;
-                        float timeout;
-                };
+	struct Align : public Action {
+		struct Config {
+			KBA kba;
+			float angle;
+			float epsilon;
+			float timeout;
+		};
 
-                Config c;
+		Config c;
 
-                Travel(Config c);
-                void run_tick() override;
-        };
+		Align(Config c);
+		ActionRunStatus run_tick() override;
+	};
 
-        typedef std::pair<std::string, std::vector<std::unique_ptr<Action>>> Routine;
+	struct Travel : public Action {
+		struct Config {
+			KBA kba;
+			float dist;
+			float epsilon;
+			float timeout;
+		};
 
-        extern std::shared_ptr<Routine> active_routine;
-        // <Name (of routine), Routine>
-        extern std::vector<std::shared_ptr<Routine>> routines;
-        extern std::queue<std::unique_ptr<Action>> actions_queue;
-        extern std::vector<std::unique_ptr<Action>> actions_running;
+		Config c;
 
-        void select_routine(int index);
-        void initialize_actions_queue(std::shared_ptr<Routine> routine);
-        void run_action(std::unique_ptr<Action>* action);
+		Travel(Config c);
+		ActionRunStatus run_tick() override;
+	};
+
+	typedef std::pair<std::string, std::queue<std::shared_ptr<Action>>> Routine;
+
+	extern std::shared_ptr<Routine> active_routine;
+	extern std::vector<std::shared_ptr<Routine>> routines; // <Name (of routine), Routine>
+	extern std::queue<std::shared_ptr<Action>> actions_queue;
+	extern std::vector<std::shared_ptr<Action>> actions_running;
+
+	void select_routine(int index);
+	void initialize_actions_queue();
+	void start_next_action();
+	ActionsBlockingStatus run_action_ticks();
 }
