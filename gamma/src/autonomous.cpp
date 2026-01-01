@@ -9,7 +9,8 @@ namespace Autonomous {
 	std::vector<std::shared_ptr<Action>> actions_running;
 
 
-	Align::Align(Align::Config c) {this->c = c;}
+	Action::Action(Align::Config c) {this->c = c;}
+
 
 	ActionRunStatus Align::run_tick() {
 		time += Properties::TICK_DELAY_MSEC/1000.0;
@@ -19,8 +20,6 @@ namespace Autonomous {
 		return ACTION_RUN_ONGOING;
 	}
 
-
-	Travel::Travel(Travel::Config c) {this->c = c;}
 
 	ActionRunStatus Travel::run_tick() {
 		time += Properties::TICK_DELAY_MSEC/1000.0;

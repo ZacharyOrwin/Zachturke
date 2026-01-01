@@ -24,10 +24,16 @@ namespace Autonomous {
 		}
 	};
 
+	struct BConfig {
+		bool blocking = true;
+	};
+
 	struct Action {
 		float time = 0;
-		bool blocking = true;
 
+		BConfig c;
+
+		Action(BConfig c);
 		virtual ~Action() = default;
 		virtual ActionRunStatus run_tick() = 0;
 	};
