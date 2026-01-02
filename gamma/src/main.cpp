@@ -42,20 +42,29 @@ void competition_initialize() {}
  * from where it left off.
  */
 void autonomous() {
+	using namespace Autonomous;
+
 	// Code snippet of routine being created and inserted in list of routines.
-	std::shared_ptr<Autonomous::Routine> routine;
+	std::shared_ptr<Routine> routine = std::make_shared<Routine>();
 	routine->first = "First Routine!";
-	routine->second.push(std::make_shared<Autonomous::Align>(Autonomous::Align::Config{}));
+
+	routine->second.push(std::make_shared<Align>(Align::Config(
+		KBA {.k = 0, .b = 2, .a = 3},
+		90,
+		0.0001,
+		10
+	)));
+
 	Autonomous::routines.push_back(routine);
 
 	// AUTONOMOUS START.
-	Autonomous::initialize_actions_queue();
+	initialize_actions_queue();
 
 	while (true) {
 		pros::delay(Properties::TICK_DELAY_MSEC);
 
-		if (Autonomous::run_action_ticks() == Autonomous::ACTIONS_UNBLOCKED) {
-			Autonomous::start_next_action();
+		if (run_action_ticks() == ACTIONS_UNBLOCKED) {
+			start_next_action();
 		}
 	}
 }
@@ -74,15 +83,17 @@ void autonomous() {
  * task, not resume it from where it left off.
  */
 void opcontrol() {
+	using namespace Controls;
+
 	// CONTROLS START.
 	while (true) {
 		pros::delay(Properties::TICK_DELAY_MSEC);
 
-		Controls::processLeftJoystick();
-		Controls::processRightJoystick();
-		Controls::processLeftTriggers();
-		Controls::processRightTriggers();
-		Controls::processLeftButtons();
-		Controls::processRightButtons();
+		processLeftJoystick();
+		processRightJoystick();
+		processLeftTriggers();
+		processRightTriggers();
+		processLeftButtons();
+		processRightButtons();
 	}
 }

@@ -5,6 +5,7 @@
 
 
 namespace Autonomous {
+
 	enum ActionRunStatus {
 		ACTION_RUN_ONGOING,
 		ACTION_RUN_COMPLETE
@@ -26,13 +27,16 @@ namespace Autonomous {
 
 	struct BConfig {
 		bool blocking = true;
+
+		BConfig(bool b) : blocking(b) {}
+		virtual ~BConfig() = default;
 	};
 
 	struct Action {
 		float time = 0;
 
 		std::unique_ptr<BConfig> c;
-                Action(std::unique_ptr<BConfig> c);
+                Action(std::unique_ptr<BConfig> c) : c(std::move(c)) {}
 		virtual ~Action() = default;
 		virtual ActionRunStatus run_tick() = 0;
 	};
@@ -43,8 +47,12 @@ namespace Autonomous {
 			float angle;
 			float epsilon;
 			float timeout;
+
+			Config(KBA k, float a, float e, float t, bool b = true) :
+				BConfig(b), kba(k), angle(a), epsilon(e), timeout(t) {}
 		};
 
+		Align(Config c) : Action(std::make_unique<Config>(std::move(c))) {}
 		ActionRunStatus run_tick() override;
 	};
 
@@ -54,17 +62,21 @@ namespace Autonomous {
 			float dist;
 			float epsilon;
 			float timeout;
+
+			Config(KBA k, float d, float e, float t, bool b = true) :
+				BConfig(b), kba(k), dist(d), epsilon(e), timeout(t) {}
 		};
 
+		Travel(Config c) : Action(std::make_unique<Config>(std::move(c))) {}
 		ActionRunStatus run_tick() override;
 	};
 
 	typedef std::pair<std::string, std::queue<std::shared_ptr<Action>>> Routine;
 
-	extern std::shared_ptr<Routine> active_routine;
-	extern std::vector<std::shared_ptr<Routine>> routines; // <Name (of routine), Routine>
-	extern std::queue<std::shared_ptr<Action>> actions_queue;
-	extern std::vector<std::shared_ptr<Action>> actions_running;
+	inline Routine* active_routine = nullptr;
+	inline std::vector<std::shared_ptr<Routine>> routines; // <Name (of routine), Routine>
+	inline std::queue<std::shared_ptr<Action>> actions_queue;
+	inline std::vector<std::shared_ptr<Action>> actions_running;
 
 	void select_routine(int index);
 	void initialize_actions_queue();

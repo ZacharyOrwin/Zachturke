@@ -3,39 +3,31 @@
 
 
 namespace Autonomous {
-	std::shared_ptr<Routine> active_routine;
-	std::vector<std::shared_ptr<Routine>> routines;
-	std::queue<std::shared_ptr<Action>> actions_queue;
-	std::vector<std::shared_ptr<Action>> actions_running;
-
-
-	Action::Action(std::unique_ptr<BConfig> c) {this->c = std::move(c);}
-
 
 	ActionRunStatus Align::run_tick() {
-                Config* c = static_cast<Config*>(c);
+                Config* cfg = static_cast<Config*>(c.get());
 
 		time += Properties::TICK_DELAY_MSEC/1000.0;
 
-		if (time > c->timeout) return ACTION_RUN_COMPLETE;
+		if (time > cfg->timeout) return ACTION_RUN_COMPLETE;
 
 		return ACTION_RUN_ONGOING;
 	}
 
 
 	ActionRunStatus Travel::run_tick() {
-                Config* c = static_cast<Config*>(c);
+                Config* cfg = static_cast<Config*>(c.get());
 
 		time += Properties::TICK_DELAY_MSEC/1000.0;
 
-		if (time > c->timeout) return ACTION_RUN_COMPLETE;
+		if (time > cfg->timeout) return ACTION_RUN_COMPLETE;
 
 		return ACTION_RUN_ONGOING;
 	}
 
 
 	void select_routine(int index) {
-		active_routine = routines.at(index);
+		active_routine = routines.at(index).get();
 	}
 
 
@@ -45,22 +37,24 @@ namespace Autonomous {
 
 
 	void start_next_action() {
-		actions_running.push_back(actions_queue.front());
-		actions_queue.pop();
+		if (!actions_queue.empty()) {
+			actions_running.push_back(actions_queue.front());
+			actions_queue.pop();
+		}
 	}
 
 
 	ActionsBlockingStatus run_action_ticks() {
-		int current_index = 0;
 		bool blocking = false;
 
-		for (const auto& action : actions_running) {
-			if (!blocking && action->c->blocking) blocking = true;
+		for (auto it = actions_running.begin(); it != actions_running.end(); ) {
+			auto& action = *it;
 
 			if (action->run_tick() == ACTION_RUN_COMPLETE) {
-				actions_running.erase(actions_running.begin() + current_index);
+				it = actions_running.erase(it);
 			} else {
-				current_index++;
+				if (!blocking && action->c->blocking) blocking = true;
+				++it;
 			}
 		}
 
