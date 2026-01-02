@@ -9,22 +9,26 @@ namespace Autonomous {
 	std::vector<std::shared_ptr<Action>> actions_running;
 
 
-	Action::Action(Align::Config c) {this->c = c;}
+	Action::Action(std::unique_ptr<BConfig> c) {this->c = std::move(c);}
 
 
 	ActionRunStatus Align::run_tick() {
+                Config* c = static_cast<Config*>(c);
+
 		time += Properties::TICK_DELAY_MSEC/1000.0;
 
-		if (time > c.timeout) return ACTION_RUN_COMPLETE;
+		if (time > c->timeout) return ACTION_RUN_COMPLETE;
 
 		return ACTION_RUN_ONGOING;
 	}
 
 
 	ActionRunStatus Travel::run_tick() {
+                Config* c = static_cast<Config*>(c);
+
 		time += Properties::TICK_DELAY_MSEC/1000.0;
 
-		if (time > c.timeout) return ACTION_RUN_COMPLETE;
+		if (time > c->timeout) return ACTION_RUN_COMPLETE;
 
 		return ACTION_RUN_ONGOING;
 	}
@@ -51,7 +55,7 @@ namespace Autonomous {
 		bool blocking = false;
 
 		for (const auto& action : actions_running) {
-			if (!blocking && action->blocking) blocking = true;
+			if (!blocking && action->c->blocking) blocking = true;
 
 			if (action->run_tick() == ACTION_RUN_COMPLETE) {
 				actions_running.erase(actions_running.begin() + current_index);

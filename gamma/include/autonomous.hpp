@@ -31,38 +31,31 @@ namespace Autonomous {
 	struct Action {
 		float time = 0;
 
-		BConfig c;
-
-		Action(BConfig c);
+		std::unique_ptr<BConfig> c;
+                Action(std::unique_ptr<BConfig> c);
 		virtual ~Action() = default;
 		virtual ActionRunStatus run_tick() = 0;
 	};
 
 	struct Align : public Action {
-		struct Config {
+		struct Config : public BConfig {
 			KBA kba;
 			float angle;
 			float epsilon;
 			float timeout;
 		};
 
-		Config c;
-
-		Align(Config c);
 		ActionRunStatus run_tick() override;
 	};
 
 	struct Travel : public Action {
-		struct Config {
+		struct Config : public BConfig {
 			KBA kba;
 			float dist;
 			float epsilon;
 			float timeout;
 		};
 
-		Config c;
-
-		Travel(Config c);
 		ActionRunStatus run_tick() override;
 	};
 
