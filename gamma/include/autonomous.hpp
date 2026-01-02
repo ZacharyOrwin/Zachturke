@@ -28,7 +28,7 @@ namespace Autonomous {
 	struct BConfig {
 		bool blocking = true;
 
-		BConfig(bool b) : blocking(b) {}
+		BConfig(bool b = true) : blocking(b) {}
 		virtual ~BConfig() = default;
 	};
 
