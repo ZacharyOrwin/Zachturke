@@ -8,6 +8,54 @@ namespace Controls {
 	static bool park_state    = false;
 	static bool unloader_state = false;
 
+
+	enum class IntakeMode {
+		REVERSE,
+		HIGH,
+		LOW,
+		OFF
+	};
+
+	void intakeWithColorSort(IntakeMode mode) {
+		double hue = BotConnections::vis_sens.get_hue();
+
+		bool is_red  = (hue >= 350 || hue <= 10);
+		bool is_blue = (hue >= 200 && hue <= 220);
+
+		// Backdoor DEFINITE WIP
+		if (is_red || is_blue) {
+			BotConnections::flap.set_value(true);
+		} else {
+			BotConnections::flap.set_value(false);
+		}
+
+		switch (mode) {
+			case IntakeMode::REVERSE:
+				BotConnections::intake_A.move(-127);
+				BotConnections::intake_B.move(-127);
+				break;
+
+			case IntakeMode::HIGH:
+				BotConnections::intake_A.move(127);
+				BotConnections::intake_B.move(127);
+				BotConnections::intake_C.move(127);
+				break;
+	
+			case IntakeMode::LOW:
+				BotConnections::intake_A.move(127);
+				BotConnections::intake_B.move(127);
+				BotConnections::intake_C.move(-127);
+				break;
+	
+			default:
+				BotConnections::intake_A.brake();
+				BotConnections::intake_B.brake();
+				BotConnections::intake_C.brake();
+				BotConnections::flap.set_value(false);
+				break;
+		}
+	}
+
 	// Each of the functions below are getting called every 10 milliseconds within a while loop.
 
 	void processLeftJoystick() {
