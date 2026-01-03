@@ -2,6 +2,7 @@
 
 #include "api.h"
 #include <queue>
+#include <filesystem>
 
 
 namespace Autonomous {
@@ -54,6 +55,7 @@ namespace Autonomous {
 
 		Align(Config c) : Action(std::make_unique<Config>(std::move(c))) {}
 		ActionRunStatus run_tick() override;
+		static Align parse(std::vector<std::string> tokens);
 	};
 
 	struct Travel : public Action {
@@ -69,6 +71,7 @@ namespace Autonomous {
 
 		Travel(Config c) : Action(std::make_unique<Config>(std::move(c))) {}
 		ActionRunStatus run_tick() override;
+		static Travel parse(std::vector<std::string> tokens);
 	};
 
 	typedef std::pair<std::string, std::queue<std::shared_ptr<Action>>> Routine;
@@ -82,4 +85,9 @@ namespace Autonomous {
 	void initialize_actions_queue();
 	void start_next_action();
 	ActionsBlockingStatus run_action_ticks();
+
+	extern std::string routines_directory;
+
+	void load_routine_files();
+	void parse_routine_file(std::filesystem::path path);
 }
