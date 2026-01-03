@@ -4,6 +4,10 @@
 
 
 namespace Controls {
+	static bool descore_state = false;
+	static bool park_state    = false;
+	static bool unloader_state = false;
+
 	// Each of the functions below are getting called every 10 milliseconds within a while loop.
 
 	void processLeftJoystick() {
