@@ -57,15 +57,15 @@ namespace Autonomous {
 
 			std::string def = tokens.at(0);
 			std::vector<std::string> pass_tokens(tokens.begin() + 2, tokens.end());
-			std::unique_ptr<Action> act;
+			std::shared_ptr<Action> act;
 
 			if (def == "ALIGN") {
 
-				act = std::make_unique<Align>(Align::parse(pass_tokens));
+				act = std::make_shared<Align>(Align::parse(pass_tokens));
 
 			} else if (def == "TRAVEL") {
 
-				act = std::make_unique<Travel>(Travel::parse(pass_tokens));
+				act = std::make_shared<Travel>(Travel::parse(pass_tokens));
 
 			} else if (def == "#") {
 
@@ -73,7 +73,7 @@ namespace Autonomous {
 
 			}
 
-			rt.second.push(std::make_shared<Action>(std::move(act)));
+			rt.second.push(act);
 		}
 
 		routines.push_back(std::make_shared<Routine>(rt));

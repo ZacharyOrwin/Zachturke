@@ -36,8 +36,8 @@ namespace Autonomous {
 	struct Action {
 		float time = 0;
 
-		std::unique_ptr<BConfig> c;
-                Action(std::unique_ptr<BConfig> c) : c(std::move(c)) {}
+		std::shared_ptr<BConfig> c;
+                Action(std::shared_ptr<BConfig> c) : c(std::move(c)) {}
 		virtual ~Action() = default;
 		virtual ActionRunStatus run_tick() = 0;
 	};
@@ -53,7 +53,7 @@ namespace Autonomous {
 				BConfig(b), kba(k), angle(a), epsilon(e), timeout(t) {}
 		};
 
-		Align(Config c) : Action(std::make_unique<Config>(std::move(c))) {}
+		Align(Config c) : Action(std::make_shared<Config>(std::move(c))) {}
 		ActionRunStatus run_tick() override;
 		static Align parse(std::vector<std::string> tokens);
 	};
@@ -69,7 +69,7 @@ namespace Autonomous {
 				BConfig(b), kba(k), dist(d), epsilon(e), timeout(t) {}
 		};
 
-		Travel(Config c) : Action(std::make_unique<Config>(std::move(c))) {}
+		Travel(Config c) : Action(std::make_shared<Config>(std::move(c))) {}
 		ActionRunStatus run_tick() override;
 		static Travel parse(std::vector<std::string> tokens);
 	};
