@@ -49,7 +49,7 @@ namespace Autonomous {
 			float epsilon;
 			float timeout;
 
-			Config(KBA k, float a, float e, float t, bool b = true) :
+			Config(KBA k, float a, float e, float t=10, bool b = true) :
 				BConfig(b), kba(k), angle(a), epsilon(e), timeout(t) {}
 		};
 
@@ -65,7 +65,7 @@ namespace Autonomous {
 			float epsilon;
 			float timeout;
 
-			Config(KBA k, float d, float e, float t, bool b = true) :
+			Config(KBA k, float d, float e, float t=10, bool b = true) :
 				BConfig(b), kba(k), dist(d), epsilon(e), timeout(t) {}
 		};
 
