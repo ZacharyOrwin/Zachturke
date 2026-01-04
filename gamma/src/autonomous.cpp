@@ -8,6 +8,15 @@ namespace Autonomous {
 	}
 
 
+	std::shared_ptr<Routine> get_routine_index(std::string name) {
+		for (auto& routine : routines) {
+			if (routine->first == name) {
+				return routine;
+			}
+		}
+	}
+
+
 	void initialize_actions_queue() {
 		actions_queue = active_routine->second;
 	}

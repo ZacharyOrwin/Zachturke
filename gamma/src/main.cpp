@@ -1,5 +1,4 @@
 #include "main.h"
-#include "liblvgl/lvgl.h"
 
 
 /**
@@ -9,7 +8,6 @@
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-	lv_init();
 	BotConnections::initialize();
 	Autonomous::load_routine_files();
 }
@@ -31,11 +29,7 @@ void disabled() {}
  * starts.
  */
 void competition_initialize() {
-	while (true) {
-		pros::delay(Properties::TICK_DELAY_MSEC);
-
-		lv_tick_inc(Properties::TICK_DELAY_MSEC);
-	}
+	OnboardGUI::initialize();
 }
 
 /**

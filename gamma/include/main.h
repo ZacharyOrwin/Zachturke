@@ -45,6 +45,7 @@
 #include "controls.hpp"
 #include "autonomous.hpp"
 #include "properties.hpp"
+#include "onboard_gui.hpp"
 
 /**
  * If you find doing pros::Motor() to be tedious and you'd prefer just to do
