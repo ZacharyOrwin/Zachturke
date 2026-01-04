@@ -2,5 +2,5 @@
 
 
 namespace Properties {
-        constexpr int TICK_DELAY_MSEC = 10;
+        constexpr int TICK_DELAY_MSEC = 5;
 }

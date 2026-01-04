@@ -73,7 +73,7 @@ namespace Autonomous {
 
 			}
 
-			rt.second.push(std::make_shared<Align>(std::move(act)));
+			rt.second.push(std::make_shared<Action>(std::move(act)));
 		}
 
 		routines.push_back(std::make_shared<Routine>(rt));

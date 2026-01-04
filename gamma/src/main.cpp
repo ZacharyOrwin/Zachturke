@@ -1,4 +1,5 @@
 #include "main.h"
+#include "liblvgl/lvgl.h"
 
 
 /**
@@ -8,8 +9,9 @@
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-	pros::lcd::initialize();
+	lv_init();
 	BotConnections::initialize();
+	Autonomous::load_routine_files();
 }
 
 /**
@@ -28,7 +30,13 @@ void disabled() {}
  * This task will exit when the robot is enabled and autonomous or opcontrol
  * starts.
  */
-void competition_initialize() {}
+void competition_initialize() {
+	while (true) {
+		pros::delay(Properties::TICK_DELAY_MSEC);
+
+		lv_tick_inc(Properties::TICK_DELAY_MSEC);
+	}
+}
 
 /**
  * Runs the user autonomous code. This function will be started in its own task
@@ -43,19 +51,6 @@ void competition_initialize() {}
  */
 void autonomous() {
 	using namespace Autonomous;
-
-	// Code snippet of routine being created and inserted in list of routines.
-	std::shared_ptr<Routine> routine = std::make_shared<Routine>();
-	routine->first = "First Routine!";
-
-	routine->second.push(std::make_shared<Align>(Align::Config(
-		KBA {.k = 0, .b = 2, .a = 3},
-		90,
-		0.0001,
-		10
-	)));
-
-	Autonomous::routines.push_back(routine);
 
 	// AUTONOMOUS START.
 	initialize_actions_queue();
