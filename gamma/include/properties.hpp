@@ -1,17 +1,35 @@
 #pragma once
 
+#include "api.h"
+
 
 namespace Properties {
-        enum IntakeMode {
-                INTAKE_OFF,
+	enum IntakeMode {
+		INTAKE_OFF,
 		INTAKE_REVERSE,
 		INTAKE_TOP,
 		INTAKE_BOTTOM
 	};
 
-        inline constexpr int TICK_DELAY_MSEC = 5;
-        inline constexpr int MAX_MOTOR_VOLTS = 127;
-        inline IntakeMode intake_mode = INTAKE_TOP;
-        inline bool col_sort_active;
-        inline bool intake_active;
+	inline constexpr int TICK_DELAY_MSEC = 5;
+	inline constexpr int MAX_MOTOR_VOLTS = 127;
+	inline constexpr float FINAL_DRIVE_RATIO = 2/3.0;
+	inline constexpr float WHEEL_DIAMETER_IN = 3.25;
+	inline IntakeMode intake_mode = INTAKE_TOP;
+	inline bool col_sort_active;
+	inline bool intake_active;
+
+	inline float get_gear_ratio(pros::v5::MotorGears gear_set) {
+		switch (gear_set)
+		{
+		case pros::v5::MotorGears::ratio_6_to_1:
+			return 6.0;
+		case pros::v5::MotorGears::ratio_18_to_1:
+                        return 18.0;
+		case pros::v5::MotorGears::ratio_36_to_1:
+                        return 36.0;
+		default:
+			return 1.0;
+		}
+	}
 }

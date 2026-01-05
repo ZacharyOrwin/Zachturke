@@ -39,6 +39,8 @@ namespace Autonomous {
 
 		// Exit Condition.
 		if (time > cfg->timeout || offset < cfg->epsilon) {
+			left_mg.brake();
+			right_mg.brake();
 			return ACTION_RUN_COMPLETE;
 		}
 
@@ -46,8 +48,8 @@ namespace Autonomous {
 		int sign = XMath::sgn<float>(curr_right_dot_target_face);
 		float twist = sign * cfg->kba.output(offset);
 
-		BotConnections::left_mg.move(-twist);
-		BotConnections::right_mg.move(twist);
+		left_mg.move(-twist);
+		right_mg.move(twist);
 
 		time += Properties::TICK_DELAY_MSEC/1000.0;
 
@@ -59,12 +61,31 @@ namespace Autonomous {
 		// Input.
                 Config* cfg = static_cast<Config*>(c.get());
 
+		pros::MotorGroup& left_mg = BotConnections::left_mg;
+		pros::MotorGroup& right_mg = BotConnections::right_mg;
+
+		float left_vel = left_mg.get_actual_velocity();
+		float right_vel = right_mg.get_actual_velocity();
+		float avg_vel = Properties::FINAL_DRIVE_RATIO
+			* Properties::get_gear_ratio(left_mg.get_gearing())
+			* (left_vel + right_vel) / 2;
+
+		float diff = cfg->dist - accum_dist;
+
 		// Exit Condition.
-		if (time > cfg->timeout) {
+		if (time > cfg->timeout || diff < cfg->epsilon) {
+			left_mg.brake();
+			right_mg.brake();
 			return ACTION_RUN_COMPLETE;
 		}
 
 		// Output.
+		float push = cfg->kba.output(diff);
+
+		left_mg.move(push);
+		right_mg.move(push);
+
+		accum_dist += avg_vel * Properties::TICK_DELAY_MSEC/1000.0;
 		time += Properties::TICK_DELAY_MSEC/1000.0;
 
 		return ACTION_RUN_ONGOING;

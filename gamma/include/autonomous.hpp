@@ -80,6 +80,8 @@ namespace Autonomous {
 				BConfig(b), kba(k), dist(d), epsilon(e), timeout(t) {}
 		};
 
+                float accum_dist;
+
 		Travel(Config c) : Action(std::make_shared<Config>(c)) {}
 		ActionRunStatus run_tick() override;
 		static void parse(Travel::Config& cfg, ParameterToken t, ValueToken v);
