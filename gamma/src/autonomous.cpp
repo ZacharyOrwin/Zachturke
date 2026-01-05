@@ -8,10 +8,11 @@ namespace Autonomous {
 	}
 
 
-	std::shared_ptr<Routine> get_routine_index(std::string name) {
+	void select_routine(std::string name) {
 		for (auto& routine : routines) {
 			if (routine->first == name) {
-				return routine;
+				active_routine = routine.get();
+				return;
 			}
 		}
 	}

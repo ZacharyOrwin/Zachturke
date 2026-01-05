@@ -82,7 +82,7 @@ namespace Autonomous {
 	inline std::vector<std::shared_ptr<Action>> actions_running;
 
 	void select_routine(int index);
-	std::shared_ptr<Routine> get_routine_index(std::string name);
+	void select_routine(std::string name);
 	void initialize_actions_queue();
 	void start_next_action();
 	ActionsBlockingStatus run_action_ticks();
