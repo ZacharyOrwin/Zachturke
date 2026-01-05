@@ -16,6 +16,8 @@ namespace Autonomous {
 		ACTIONS_UNBLOCKED
 	};
 
+	typedef std::string ParameterToken, ValueToken;
+
 	struct KBA {
 		float k;
 		float b;
@@ -24,6 +26,8 @@ namespace Autonomous {
 		float output(float t) {
 			return std::min(std::max(t*k, a), b);
 		}
+
+		static KBA parse(ValueToken v);
 	};
 
 	struct BConfig {
@@ -42,8 +46,6 @@ namespace Autonomous {
 		virtual ActionRunStatus run_tick() = 0;
 	};
 
-        typedef std::string ParameterToken, ValueToken;
-
 	struct Align : public Action {
 		struct Config : public BConfig {
 			KBA kba;
@@ -51,7 +53,7 @@ namespace Autonomous {
 			float epsilon;
 			float timeout;
 
-			Config(KBA k, float a, float e, float t=10, bool b = true) :
+			Config(KBA k, float a, float e, float t=10, bool b=true) :
 				BConfig(b), kba(k), angle(a), epsilon(e), timeout(t) {}
 		};
 
@@ -67,13 +69,26 @@ namespace Autonomous {
 			float epsilon;
 			float timeout;
 
-			Config(KBA k, float d, float e, float t=10, bool b = true) :
+			Config(KBA k, float d, float e, float t=10, bool b=true) :
 				BConfig(b), kba(k), dist(d), epsilon(e), timeout(t) {}
 		};
 
 		Travel(Config c) : Action(std::make_shared<Config>(c)) {}
 		ActionRunStatus run_tick() override;
 		static void parse(Travel::Config& cfg, ParameterToken t, ValueToken v);
+	};
+
+	struct ColorSort : public Action {
+		struct Config : public BConfig {
+			float timeout;
+
+			Config(float t=5, bool b=true) :
+				BConfig(b), timeout(t) {}
+		};
+
+		ColorSort(Config c) : Action(std::make_shared<Config>(c)) {}
+		ActionRunStatus run_tick() override;
+		static void parse(ColorSort::Config& cfg, ParameterToken t, ValueToken v);
 	};
 
 	typedef std::pair<std::string, std::queue<std::shared_ptr<Action>>> Routine;

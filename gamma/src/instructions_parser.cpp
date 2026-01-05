@@ -73,7 +73,6 @@ namespace Autonomous {
 			std::shared_ptr<Action> act;
 
 			if (def == "ALIGN") {
-
 				act = std::make_shared<Align>(
 					parse_parameter_token<Align, Align::Config>(
 						def_align_cfg,
@@ -83,7 +82,6 @@ namespace Autonomous {
 				);
 
 			} else if (def == "TRAVEL") {
-
 				act = std::make_shared<Travel>(
 					parse_parameter_token<Travel, Travel::Config>(
 						def_travel_cfg,
@@ -118,74 +116,66 @@ namespace Autonomous {
 	}
 
 
+	KBA KBA::parse(ValueToken v) {
+		std::vector<float> kba_args;
+		std::istringstream v_stream(v);
+
+		for (std::string arg; std::getline(v_stream, arg, ','); ) {
+			kba_args.push_back(std::stof(arg));
+		}
+
+		return KBA {
+			.k = kba_args.at(0),
+			.b = kba_args.at(1),
+			.a = kba_args.at(2)
+		};
+	}
+
+
 	void Align::parse(Align::Config& cfg, ParameterToken t, ValueToken v) {
 		if (t == "KBA") {
-
-			std::vector<float> kba_args;
-			std::istringstream v_stream(v);
-
-			for (std::string arg; std::getline(v_stream, arg, ','); ) {
-				kba_args.push_back(std::stof(arg));
-			}
-
-			cfg.kba = KBA {
-				.k = kba_args.at(0),
-				.b = kba_args.at(1),
-				.a = kba_args.at(2)
-			};
+			cfg.kba = KBA::parse(v);
 
 		} else if (t == "ANG") {
-
 			cfg.angle = std::stof(v);
 
 		} else if (t == "EPS") {
-
 			cfg.epsilon = std::stof(v);
 
 		} else if (t == "TIME") {
-
 			cfg.timeout = std::stof(v);
 
 		} else if (t == "BLK") {
-
 			cfg.blocking = std::stoi(v);
-
 		}
 	}
 
 
 	void Travel::parse(Travel::Config& cfg, ParameterToken t, ValueToken v) {
 		if (t == "KBA") {
-
-			std::vector<float> kba_args;
-			std::istringstream v_stream(v);
-
-			for (std::string arg; std::getline(v_stream, arg, ','); ) {
-				kba_args.push_back(std::stof(arg));
-			}
-
-			cfg.kba = KBA {
-				.k = kba_args.at(0),
-				.b = kba_args.at(1),
-				.a = kba_args.at(2)
-			};
+			cfg.kba = KBA::parse(v);
 
 		} else if (t == "DIST") {
-
 			cfg.dist = std::stof(v);
 
 		} else if (t == "EPS") {
-
 			cfg.epsilon = std::stof(v);
 
 		} else if (t == "TIME") {
-
 			cfg.timeout = std::stof(v);
 
 		} else if (t == "BLK") {
-
 			cfg.blocking = std::stoi(v);
+		}
+	}
 
+
+	void ColorSort::parse(ColorSort::Config& cfg, ParameterToken t, ValueToken v) {
+		if (t == "TIME") {
+			cfg.timeout = std::stof(v);
+
+		} else if (t == "BLK") {
+			cfg.blocking = std::stoi(v);
 		}
 	}
 }
