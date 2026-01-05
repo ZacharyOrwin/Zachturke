@@ -10,6 +10,7 @@ namespace Properties {
 	};
 
         inline constexpr int TICK_DELAY_MSEC = 5;
+        inline constexpr int MAX_MOTOR_VOLTS = 127;
         inline IntakeMode intake_mode = INTAKE_TOP;
         inline bool col_sort_active;
         inline bool intake_active;

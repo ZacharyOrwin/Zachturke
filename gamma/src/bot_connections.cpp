@@ -24,6 +24,8 @@ namespace BotConnections {
 
 
 	void initialize() {
+		imu.reset(true);
+
 		left_mg.set_gearing_all(pros::E_MOTOR_GEAR_BLUE);
 		right_mg.set_gearing_all(pros::E_MOTOR_GEAR_BLUE);
 

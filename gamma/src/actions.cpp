@@ -1,56 +1,101 @@
 #include "autonomous.hpp"
 #include "bot_connections.hpp"
 #include "properties.hpp"
+#include "xmath.hpp"
+#include "vector2.hpp"
 
 
 namespace Autonomous {
 
 	ActionRunStatus Align::run_tick() {
+		// Input.
                 Config* cfg = static_cast<Config*>(c.get());
+		pros::Imu& imu = BotConnections::imu;
+		pros::MotorGroup& left_mg = BotConnections::left_mg;
+		pros::MotorGroup& right_mg = BotConnections::right_mg;
+
+		float curr_ang = imu.get_heading();
+        	float curr_rad = XMath::rad(curr_ang);
+        	float target_rad = XMath::rad(cfg->angle);
+
+		Vector2 curr_face_vec = Vector2 {
+                	std::cos(curr_rad),
+			std::sin(curr_rad)
+		};
+		Vector2 curr_right_vec = Vector2 {
+			std::sin(curr_rad),
+			-std::cos(curr_rad)
+		};
+		Vector2 target_face_vec = Vector2 {
+			std::cos(target_rad),
+			std::sin(target_rad),
+		};
+
+		float curr_face_dot_target_face = curr_face_vec.dot(target_face_vec);
+		float curr_right_dot_target_face = curr_right_vec.dot(target_face_vec);
+		// Range [0, 1] : 0 is target_face and curr_face aligned, 1 is them facing
+		// opposite directions.
+		float offset = (1 - curr_face_dot_target_face) / 2.0;
+
+		// Exit Condition.
+		if (time > cfg->timeout || offset < cfg->epsilon) {
+			return ACTION_RUN_COMPLETE;
+		}
+
+		// Output.
+		int sign = XMath::sgn<float>(curr_right_dot_target_face);
+		float twist = sign * cfg->kba.output(offset);
+
+		BotConnections::left_mg.move(-twist);
+		BotConnections::right_mg.move(twist);
 
 		time += Properties::TICK_DELAY_MSEC/1000.0;
-
-		if (time > cfg->timeout) return ACTION_RUN_COMPLETE;
 
 		return ACTION_RUN_ONGOING;
 	}
 
 
 	ActionRunStatus Travel::run_tick() {
+		// Input.
                 Config* cfg = static_cast<Config*>(c.get());
 
-		time += Properties::TICK_DELAY_MSEC/1000.0;
+		// Exit Condition.
+		if (time > cfg->timeout) {
+			return ACTION_RUN_COMPLETE;
+		}
 
-		if (time > cfg->timeout) return ACTION_RUN_COMPLETE;
+		// Output.
+		time += Properties::TICK_DELAY_MSEC/1000.0;
 
 		return ACTION_RUN_ONGOING;
 	}
 
 	
 	ActionRunStatus ColorSort::run_tick() {
+		// Input.
 		Config* cfg = static_cast<Config*>(c.get());
 
-		time += Properties::TICK_DELAY_MSEC/1000.0;
+		double hue = BotConnections::vis_sens.get_hue();
 
+		// Exit Condition.
 		if (cfg->toggling && !Properties::col_sort_active && !toggled) {
 			Properties::col_sort_active = true;
 			toggled = true;
 
 		} else if (cfg->toggling && Properties::col_sort_active && !toggled) {
 			Properties::col_sort_active = false;
+			BotConnections::flap.set_value(false);
 			return ACTION_RUN_COMPLETE;
 
-		// Exit point here in if-block for toggling.
 		} else if (toggled) {
 
-		// The last condition for non-toggling actions or switched off via other action.
 		} else if (time > cfg->timeout || !Properties::col_sort_active) {
+			BotConnections::flap.set_value(false);
 			return ACTION_RUN_COMPLETE;
 		}
 
-		double hue = BotConnections::vis_sens.get_hue();
-
-		bool is_red  = (hue >= 350 || hue <= 10);
+		// Output.
+		bool is_red = (hue >= 350 || hue <= 10);
 		bool is_blue = (hue >= 200 && hue <= 220);
 
 		// Backdoor DEFINITE WIP
@@ -59,69 +104,67 @@ namespace Autonomous {
 		} else {
 			BotConnections::flap.set_value(false);
 		}
+
+		time += Properties::TICK_DELAY_MSEC/1000.0;
 		
 		return ACTION_RUN_ONGOING;
 	}
 
 
 	ActionRunStatus Intake::run_tick() {
+		// Input.
 		Config* cfg = static_cast<Config*>(c.get());
 
 		Properties::intake_mode = cfg->intake_mode;
-		time += Properties::TICK_DELAY_MSEC/1000.0;
 
+		// Exit Condition.
 		if (cfg->toggling && !Properties::intake_active && !toggled) {
 			Properties::intake_active = true;
 			toggled = true;
 
 		} else if (cfg->toggling && Properties::intake_active && !toggled) {
 			Properties::intake_active = false;
-
 			BotConnections::intake_A.brake();
 			BotConnections::intake_B.brake();
 			BotConnections::intake_C.brake();
-			BotConnections::flap.set_value(false);
-
 			return ACTION_RUN_COMPLETE;
 
-		// Exit point here in if-block for toggling.
 		} else if (toggled) {
 
-		// The last condition for non-toggling actions or switched off via other action.
 		} else if (time > cfg->timeout || !Properties::intake_active) {
 			BotConnections::intake_A.brake();
 			BotConnections::intake_B.brake();
 			BotConnections::intake_C.brake();
-			BotConnections::flap.set_value(false);
-
 			return ACTION_RUN_COMPLETE;
 		}
 
+		// Output.
 		switch (Properties::intake_mode) {
 			case Properties::INTAKE_REVERSE:
-				BotConnections::intake_A.move(-127);
-				BotConnections::intake_B.move(-127);
+				BotConnections::intake_A.move(-Properties::MAX_MOTOR_VOLTS);
+				BotConnections::intake_B.move(-Properties::MAX_MOTOR_VOLTS);
 				break;
 
 			case Properties::INTAKE_TOP:
-				BotConnections::intake_A.move(127);
-				BotConnections::intake_B.move(127);
-				BotConnections::intake_C.move(127);
+				BotConnections::intake_A.move(Properties::MAX_MOTOR_VOLTS);
+				BotConnections::intake_B.move(Properties::MAX_MOTOR_VOLTS);
+				BotConnections::intake_C.move(Properties::MAX_MOTOR_VOLTS);
 				break;
 	
 			case Properties::INTAKE_BOTTOM:
-				BotConnections::intake_A.move(127);
-				BotConnections::intake_B.move(127);
-				BotConnections::intake_C.move(-127);
+				BotConnections::intake_A.move(Properties::MAX_MOTOR_VOLTS);
+				BotConnections::intake_B.move(Properties::MAX_MOTOR_VOLTS);
+				BotConnections::intake_C.move(-Properties::MAX_MOTOR_VOLTS);
 				break;
 	
 			case Properties::INTAKE_OFF:
 				BotConnections::intake_A.brake();
 				BotConnections::intake_B.brake();
 				BotConnections::intake_C.brake();
-				BotConnections::flap.set_value(false);
 				break;
 		}
+
+		time += Properties::TICK_DELAY_MSEC/1000.0;
 
 		return ACTION_RUN_ONGOING;
 	}
