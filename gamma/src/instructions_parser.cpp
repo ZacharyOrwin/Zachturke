@@ -6,6 +6,11 @@ namespace Autonomous {
 
 	std::string routines_directory = "/usd";
 
+	Align::Config def_align_cfg(KBA(), 0.0, 0.0);
+	Travel::Config def_travel_cfg(KBA(), 0.0, 0.0);
+	ColorSort::Config def_col_sort_cfg(COLOR_SORT_RED);
+	Intake::Config def_intake_cfg(Properties::INTAKE_TOP);
+
 
 	void load_routine_files() {
 		std::filesystem::path routines_path(routines_directory);
@@ -74,7 +79,7 @@ namespace Autonomous {
 
 			if (def == "ALIGN") {
 				act = std::make_shared<Align>(
-					parse_parameter_token<Align, Align::Config>(
+					parse_parameter_tokens<Align, Align::Config>(
 						def_align_cfg,
 						param_tokens,
 						Align::parse
@@ -83,10 +88,28 @@ namespace Autonomous {
 
 			} else if (def == "TRAVEL") {
 				act = std::make_shared<Travel>(
-					parse_parameter_token<Travel, Travel::Config>(
+					parse_parameter_tokens<Travel, Travel::Config>(
 						def_travel_cfg,
 						param_tokens,
 						Travel::parse
+					)
+				);
+
+			} else if (def == "COLSORT") {
+				act = std::make_shared<ColorSort>(
+					parse_parameter_tokens<ColorSort, ColorSort::Config>(
+						def_col_sort_cfg,
+						param_tokens,
+						ColorSort::parse
+					)
+				);
+
+			} else if (def == "INTAKE") {
+				act = std::make_shared<Intake>(
+					parse_parameter_tokens<Intake, Intake::Config>(
+						def_intake_cfg,
+						param_tokens,
+						Intake::parse
 					)
 				);
 
@@ -100,7 +123,7 @@ namespace Autonomous {
 
 
 	template <typename T, typename G>
-	G parse_parameter_token(
+	G parse_parameter_tokens(
 		G& cfg,
 		std::vector<std::string> parameter_tokens,
 		std::function<void(G&, ParameterToken, ValueToken)> parser_function)
@@ -171,7 +194,39 @@ namespace Autonomous {
 
 
 	void ColorSort::parse(ColorSort::Config& cfg, ParameterToken t, ValueToken v) {
-		if (t == "TIME") {
+		if (t == "COL") {
+			if (v == "red") {
+				cfg.color = COLOR_SORT_RED;
+			} else if (v == "blue") {
+				cfg.color = COLOR_SORT_BLUE;
+			}
+
+		} else if (t == "TOG") {
+			cfg.toggling = std::stoi(v);
+
+		} else if (t == "TIME") {
+			cfg.timeout = std::stof(v);
+
+		} else if (t == "BLK") {
+			cfg.blocking = std::stoi(v);
+		}
+	}
+
+
+	void Intake::parse(Intake::Config& cfg, ParameterToken t, ValueToken v) {
+		if (t == "MODE") {
+			if (v == "top") {
+				cfg.intake_mode = Properties::INTAKE_TOP;
+			} else if (v == "bottom") {
+				cfg.intake_mode = Properties::INTAKE_BOTTOM;
+			} else if (v == "reverse") {
+				cfg.intake_mode = Properties::INTAKE_REVERSE;
+			}
+			
+		} else if (t == "TOG") {
+			cfg.toggling = std::stoi(v);
+
+		} else if (t == "TIME") {
 			cfg.timeout = std::stof(v);
 
 		} else if (t == "BLK") {

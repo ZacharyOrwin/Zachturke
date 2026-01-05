@@ -1,6 +1,7 @@
 #pragma once
 
 #include "api.h"
+#include "properties.hpp"
 #include <queue>
 #include <filesystem>
 
@@ -11,9 +12,15 @@ namespace Autonomous {
 		ACTION_RUN_ONGOING,
 		ACTION_RUN_COMPLETE
 	};
+
 	enum ActionsBlockingStatus {
 		ACTIONS_BLOCKED,
 		ACTIONS_UNBLOCKED
+	};
+
+	enum ColorSortColor {
+		COLOR_SORT_RED,
+		COLOR_SORT_BLUE
 	};
 
 	typedef std::string ParameterToken, ValueToken;
@@ -80,15 +87,36 @@ namespace Autonomous {
 
 	struct ColorSort : public Action {
 		struct Config : public BConfig {
+			ColorSortColor color;
+			bool toggling;
 			float timeout;
 
-			Config(float t=5, bool b=true) :
-				BConfig(b), timeout(t) {}
+			Config(ColorSortColor c, float t=5, bool tog=false, bool b=true) :
+				BConfig(!tog && b), color(c), toggling(tog), timeout(t) {}
 		};
+
+		bool toggled;
 
 		ColorSort(Config c) : Action(std::make_shared<Config>(c)) {}
 		ActionRunStatus run_tick() override;
 		static void parse(ColorSort::Config& cfg, ParameterToken t, ValueToken v);
+	};
+
+	struct Intake : public Action {
+		struct Config : public BConfig {
+			Properties::IntakeMode intake_mode;
+			bool toggling;
+			float timeout;
+
+			Config(Properties::IntakeMode i_m, float t=5, bool tog=false, bool b=true) :
+				BConfig(!tog && b), intake_mode(i_m), toggling(tog), timeout(t) {}
+		};
+
+		bool toggled;
+
+		Intake(Config c) : Action(std::make_shared<Config>(c)) {}
+		ActionRunStatus run_tick() override;
+		static void parse(Intake::Config& cfg, ParameterToken t, ValueToken v);
 	};
 
 	typedef std::pair<std::string, std::queue<std::shared_ptr<Action>>> Routine;
@@ -105,13 +133,15 @@ namespace Autonomous {
 	ActionsBlockingStatus run_action_ticks();
 
 	extern std::string routines_directory;
-	inline Align::Config def_align_cfg(KBA(), 0.0, 0.0);
-	inline Travel::Config def_travel_cfg(KBA(), 0.0, 0.0);
+	extern Align::Config def_align_cfg;
+	extern Travel::Config def_travel_cfg;
+	extern ColorSort::Config def_col_sort_cfg;
+	extern Intake::Config def_intake_cfg;
 
 	void load_routine_files();
 	void parse_routine_file(std::filesystem::path path);
 	template <typename T, typename G>
-	G parse_parameter_token(
+	G parse_parameter_tokens(
 		G& cfg,
 		std::vector<std::string> parameter_tokens,
 		std::function<void(G&, ParameterToken, ValueToken)> parser_function
