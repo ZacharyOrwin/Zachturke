@@ -20,6 +20,7 @@ namespace BotConnections {
 	pros::adi::DigitalOut descore('D');
 	pros::adi::DigitalOut unloader('E');
 
+	pros::Distance dist_sens(20);
 	pros::Optical vis_sens(1);
 
 
