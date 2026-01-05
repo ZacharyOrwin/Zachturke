@@ -53,9 +53,9 @@ namespace Autonomous {
 				BConfig(b), kba(k), angle(a), epsilon(e), timeout(t) {}
 		};
 
-		Align(Config c) : Action(std::make_shared<Config>(std::move(c))) {}
+		Align(Config c) : Action(std::make_shared<Config>(c)) {}
 		ActionRunStatus run_tick() override;
-		static Align parse(std::vector<std::string> tokens);
+		static void parse(Align::Config& cfg, ParameterToken t, ValueToken v);
 	};
 
 	struct Travel : public Action {
@@ -69,9 +69,9 @@ namespace Autonomous {
 				BConfig(b), kba(k), dist(d), epsilon(e), timeout(t) {}
 		};
 
-		Travel(Config c) : Action(std::make_shared<Config>(std::move(c))) {}
+		Travel(Config c) : Action(std::make_shared<Config>(c)) {}
 		ActionRunStatus run_tick() override;
-		static Travel parse(std::vector<std::string> tokens);
+		static void parse(Travel::Config& cfg, ParameterToken t, ValueToken v);
 	};
 
 	typedef std::pair<std::string, std::queue<std::shared_ptr<Action>>> Routine;
@@ -87,8 +87,18 @@ namespace Autonomous {
 	void start_next_action();
 	ActionsBlockingStatus run_action_ticks();
 
+	typedef std::string ParameterToken, ValueToken;
+
 	extern std::string routines_directory;
+	inline Align::Config def_align_cfg(KBA(), 0.0, 0.0);
+	inline Travel::Config def_travel_cfg(KBA(), 0.0, 0.0);
 
 	void load_routine_files();
 	void parse_routine_file(std::filesystem::path path);
+	template <typename T, typename G>
+	G parse_parameter_token(
+		G& cfg,
+		std::vector<std::string> parameter_tokens,
+		std::function<void(G&, ParameterToken, ValueToken)> parser_function
+	);
 }

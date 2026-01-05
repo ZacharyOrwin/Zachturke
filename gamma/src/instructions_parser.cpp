@@ -25,17 +25,30 @@ namespace Autonomous {
 
 
 	/*
+
 	Routine text files will generally be formatted as such:
 
 	```txt
 	ALIGN : KBA 2,4,6 ANG 90 EPS 0.0001 TIME 10
 	TRAVEL : KBA 3,5,7 DIST 10 EPS 0.01 TIME 5
-	# This is a comment.
+	This is a comment.
 	ALIGN : ANG 135 TIME 10 KBA 2,4,8 EPS 0.0001 BLK 1
+	TRAVEL : DIST 5
 	```
+
+	Lines can either contain a comment, or a definition token (ALIGN, TRAVEL)
+	followed by parameter tokens
+
+	Notice that in the 4th line, the order of parameter tokens doesn't matter;
+	as long as the correct value token proceed each then it is valid.
 	
-	Notice that the order of definition tokens doesn't matter - as long as
-	the correct value token proceed each then it is valid.
+	Also notice, the 5th line is an example of defaultation: any parameter tokens
+	not defined will use the last parameter tokens from a previous call of the
+	same definition token (in this case, from line 2).
+
+	Some actions have default values for some of their actions already. For
+	example, all actions by default block, and ALIGN and TRAVEL have timeouts
+	of 10 seconds. Note, defaultation WILL override these.
 
 	*/
 	void parse_routine_file(std::filesystem::path path) {
@@ -56,22 +69,30 @@ namespace Autonomous {
 			}
 
 			std::string def = tokens.at(0);
-			std::vector<std::string> pass_tokens(tokens.begin() + 2, tokens.end());
+			std::vector<std::string> param_tokens(tokens.begin() + 2, tokens.end());
 			std::shared_ptr<Action> act;
 
 			if (def == "ALIGN") {
 
-				act = std::make_shared<Align>(Align::parse(pass_tokens));
+				act = std::make_shared<Align>(
+					parse_parameter_token<Align, Align::Config>(
+						def_align_cfg,
+						param_tokens,
+						Align::parse
+					)
+				);
 
 			} else if (def == "TRAVEL") {
 
-				act = std::make_shared<Travel>(Travel::parse(pass_tokens));
+				act = std::make_shared<Travel>(
+					parse_parameter_token<Travel, Travel::Config>(
+						def_travel_cfg,
+						param_tokens,
+						Travel::parse
+					)
+				);
 
-			} else if (def == "#") {
-
-				continue;
-
-			}
+			} else { continue; }
 
 			rt.second.push(act);
 		}
@@ -80,92 +101,91 @@ namespace Autonomous {
 	}
 
 
-	Align Align::parse(std::vector<std::string> tokens) {
-		Align::Config cfg(KBA(), 0.0, 0.0);
+	template <typename T, typename G>
+	G parse_parameter_token(
+		G& cfg,
+		std::vector<std::string> parameter_tokens,
+		std::function<void(G&, ParameterToken, ValueToken)> parser_function)
+	{
+		for (auto it = parameter_tokens.begin(); it == parameter_tokens.end() - 1; it += 2) {
+			ParameterToken t = *it;
+			ValueToken v = *(it+1);
 
-		for (auto it = tokens.begin(); it == tokens.end() - 1; ++it) {
-			std::string t = *it;
-			std::string v = *(it+1);
-
-			if (t == "KBA") {
-
-				std::vector<float> kba_args;
-				std::istringstream v_stream(v);
-
-				for (std::string arg; std::getline(v_stream, arg, ','); ) {
-					kba_args.push_back(std::stof(arg));
-				}
-
-				cfg.kba = KBA {
-					.k = kba_args.at(0),
-					.b = kba_args.at(1),
-					.a = kba_args.at(2)
-				};
-
-			} else if (t == "ANG") {
-
-				cfg.angle = std::stof(v);
-
-			} else if (t == "EPS") {
-
-				cfg.epsilon = std::stof(v);
-
-			} else if (t == "TIME") {
-
-				cfg.timeout = std::stof(v);
-
-			} else if (t == "BLK") {
-
-				cfg.blocking = std::stoi(v);
-
-			}
+			parser_function(cfg, t, v);
 		}
 
-		return Align(cfg);
+		return cfg;
 	}
 
 
-	Travel Travel::parse(std::vector<std::string> tokens) {
-		Travel::Config cfg(KBA(), 0.0, 0.0);
+	void Align::parse(Align::Config& cfg, ParameterToken t, ValueToken v) {
+		if (t == "KBA") {
 
-		for (auto it = tokens.begin(); it == tokens.end(); it += 2) {
-			std::string t = *it;
-			std::string v = *(it+1);
+			std::vector<float> kba_args;
+			std::istringstream v_stream(v);
 
-			if (t == "KBA") {
-
-				std::vector<float> kba_args;
-				std::istringstream v_stream(v);
-
-				for (std::string arg; std::getline(v_stream, arg, ','); ) {
-					kba_args.push_back(std::stof(arg));
-				}
-
-				cfg.kba = KBA {
-					.k = kba_args.at(0),
-					.b = kba_args.at(1),
-					.a = kba_args.at(2)
-				};
-
-			} else if (t == "DIST") {
-
-				cfg.dist = std::stof(v);
-
-			} else if (t == "EPS") {
-
-				cfg.epsilon = std::stof(v);
-
-			} else if (t == "TIME") {
-
-				cfg.timeout = std::stof(v);
-
-			} else if (t == "BLK") {
-
-				cfg.blocking = std::stoi(v);
-
+			for (std::string arg; std::getline(v_stream, arg, ','); ) {
+				kba_args.push_back(std::stof(arg));
 			}
-		}
 
-		return Travel(cfg);
+			cfg.kba = KBA {
+				.k = kba_args.at(0),
+				.b = kba_args.at(1),
+				.a = kba_args.at(2)
+			};
+
+		} else if (t == "ANG") {
+
+			cfg.angle = std::stof(v);
+
+		} else if (t == "EPS") {
+
+			cfg.epsilon = std::stof(v);
+
+		} else if (t == "TIME") {
+
+			cfg.timeout = std::stof(v);
+
+		} else if (t == "BLK") {
+
+			cfg.blocking = std::stoi(v);
+
+		}
+	}
+
+
+	void Travel::parse(Travel::Config& cfg, ParameterToken t, ValueToken v) {
+		if (t == "KBA") {
+
+			std::vector<float> kba_args;
+			std::istringstream v_stream(v);
+
+			for (std::string arg; std::getline(v_stream, arg, ','); ) {
+				kba_args.push_back(std::stof(arg));
+			}
+
+			cfg.kba = KBA {
+				.k = kba_args.at(0),
+				.b = kba_args.at(1),
+				.a = kba_args.at(2)
+			};
+
+		} else if (t == "DIST") {
+
+			cfg.dist = std::stof(v);
+
+		} else if (t == "EPS") {
+
+			cfg.epsilon = std::stof(v);
+
+		} else if (t == "TIME") {
+
+			cfg.timeout = std::stof(v);
+
+		} else if (t == "BLK") {
+
+			cfg.blocking = std::stoi(v);
+
+		}
 	}
 }
