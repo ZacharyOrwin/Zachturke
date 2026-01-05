@@ -42,6 +42,8 @@ namespace Autonomous {
 		virtual ActionRunStatus run_tick() = 0;
 	};
 
+        typedef std::string ParameterToken, ValueToken;
+
 	struct Align : public Action {
 		struct Config : public BConfig {
 			KBA kba;
@@ -86,8 +88,6 @@ namespace Autonomous {
 	void initialize_actions_queue();
 	void start_next_action();
 	ActionsBlockingStatus run_action_ticks();
-
-	typedef std::string ParameterToken, ValueToken;
 
 	extern std::string routines_directory;
 	inline Align::Config def_align_cfg(KBA(), 0.0, 0.0);

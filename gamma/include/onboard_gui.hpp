@@ -1,6 +1,7 @@
 #pragma once
 
 #include "liblvgl/lvgl.h"
+#include <string>
 
 
 namespace OnboardGUI {
