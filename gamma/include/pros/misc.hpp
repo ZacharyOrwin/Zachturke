@@ -607,7 +607,6 @@ std::int32_t is_installed(void);
  * }
  * \endcode
  */
-
 std::int32_t list_files(const char* path, char* buffer, std::int32_t len);
 }  // namespace usd
 

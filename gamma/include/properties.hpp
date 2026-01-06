@@ -4,6 +4,7 @@
 
 
 namespace Properties {
+	
 	enum IntakeMode {
 		INTAKE_OFF,
 		INTAKE_REVERSE,

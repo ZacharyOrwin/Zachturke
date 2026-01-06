@@ -1,10 +1,11 @@
 #include "autonomous.hpp"
 #include <fstream>
+#include <stdio.h>
 
 
 namespace Autonomous {
 
-	std::string routines_directory = "/usd";
+	std::string routines_directory = "/";
 
 	Align::Config def_align_cfg(KBA(), 0.0, 0.0);
 	Travel::Config def_travel_cfg(KBA(), 0.0, 0.0);
@@ -13,19 +14,19 @@ namespace Autonomous {
 
 
 	void load_routine_files() {
-		std::filesystem::path routines_path(routines_directory);
-		std::filesystem::directory_iterator d_iter(routines_path);
+		char* files = (char*)malloc(1024);
+		pros::usd::list_files(routines_directory.c_str(), files, 1024);
+		std::istringstream files_iss(files);
 
-		for (auto& dir : d_iter) {
-			if (!dir.is_regular_file()) continue;
-
-			std::filesystem::path p = dir.path();
+		for (std::string file_name; std::getline(files_iss, file_name); ) {
+			std::filesystem::path p(file_name);
 
 			if (p.extension() == ".txt") {
 				parse_routine_file(p);
 			}
-			
 		}
+
+		std::free(files);
 	}
 
 

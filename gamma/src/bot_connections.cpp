@@ -2,6 +2,7 @@
 
 
 namespace BotConnections {
+	
 	pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 	pros::MotorGroup left_mg({-7,3,-2});

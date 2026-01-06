@@ -4,6 +4,7 @@
 
 
 namespace Controls {
+	
 	void processLeftJoystick();
 	void processRightJoystick();
 	void processLeftTriggers();

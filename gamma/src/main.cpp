@@ -8,8 +8,10 @@
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
+	pros::delay(500);
 	BotConnections::initialize();
 	Autonomous::load_routine_files();
+	OnboardGUI::initialize();
 }
 
 /**
@@ -29,7 +31,7 @@ void disabled() {}
  * starts.
  */
 void competition_initialize() {
-	OnboardGUI::initialize();
+	
 }
 
 /**

@@ -15,13 +15,15 @@ namespace OnboardGUI {
 
 
 	// Define layouts, then positioning, hierarchy, and style of widgets.
-	void define_visuals() {}
+	void define_visuals() {
+		lv_obj_set_x(selected_routine_lv_label, 300);
+	}
 
 
 	void load_routines_list() {
 		for (auto& routine : Autonomous::routines) {
 			lv_obj_t* btn = lv_list_add_button(routines_lv_list, nullptr, routine->first.c_str());
-			lv_obj_add_event_cb(btn, on_routine_btn_cb, LV_EVENT_VALUE_CHANGED, nullptr);
+			lv_obj_add_event_cb(btn, on_routine_btn_cb, LV_EVENT_CLICKED, nullptr);
 		}
 
 		select_routine(lv_list_get_button_text(routines_lv_list, lv_obj_get_child(routines_lv_list, 0)));
@@ -29,7 +31,7 @@ namespace OnboardGUI {
 
 	
 	void on_routine_btn_cb(lv_event_t* e) {
-		lv_obj_t* btn = lv_event_get_target_obj(e);
+		lv_obj_t* btn = lv_event_get_current_target_obj(e);
 
 		select_routine(lv_list_get_button_text(routines_lv_list, btn));
 	}

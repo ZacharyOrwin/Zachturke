@@ -4,6 +4,7 @@
 
 
 namespace BotConnections {
+	
 	extern pros::Controller controller;
 
 	extern pros::MotorGroup left_mg;
@@ -22,6 +23,7 @@ namespace BotConnections {
 	extern pros::adi::DigitalOut descore;
 	extern pros::adi::DigitalOut unloader;
 
+	extern pros::Distance dist_sens;
 	extern pros::Optical vis_sens;
 
 	
