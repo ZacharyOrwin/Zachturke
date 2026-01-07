@@ -8,10 +8,9 @@
  * to keep execution time for this mode under a few seconds.
  */
 void initialize() {
-	pros::delay(500);
 	BotConnections::initialize();
 	Autonomous::load_routine_files();
-	OnboardGUI::initialize();
+	OnboardGUI::initialize_selector();
 }
 
 /**
@@ -50,13 +49,21 @@ void autonomous() {
 
 	// AUTONOMOUS START.
 	initialize_actions_queue();
+	OnboardGUI::initialize_running();
 
 	while (true) {
-		pros::delay(Properties::TICK_DELAY_MSEC);
-
 		if (run_action_ticks() == ACTIONS_UNBLOCKED) {
 			start_next_action();
 		}
+
+		int curr_refresh_cycles = Properties::global_time_msec / Properties::SCREEN_REFRESH_DELAY_MSEC;
+		if (curr_refresh_cycles > Properties::screen_refresh_cycles) {
+			OnboardGUI::running_actions_view_run_tick();
+			Properties::screen_refresh_cycles = curr_refresh_cycles;
+		}
+
+		pros::delay(Properties::TICK_DELAY_MSEC);
+		Properties::global_time_msec += Properties::TICK_DELAY_MSEC;
 	}
 }
 

@@ -12,10 +12,13 @@ namespace Properties {
 		INTAKE_BOTTOM
 	};
 
-	inline constexpr int TICK_DELAY_MSEC = 5;
+	inline constexpr int TICK_DELAY_MSEC = 10;
+	inline constexpr int SCREEN_REFRESH_DELAY_MSEC = 400;
 	inline constexpr int MAX_MOTOR_VOLTS = 127;
 	inline constexpr float FINAL_DRIVE_RATIO = 2/3.0;
 	inline constexpr float WHEEL_DIAMETER_IN = 3.25;
+	inline int global_time_msec;
+	inline int screen_refresh_cycles;
 	inline IntakeMode intake_mode = INTAKE_TOP;
 	inline bool col_sort_active;
 	inline bool intake_active;

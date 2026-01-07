@@ -189,4 +189,23 @@ namespace Autonomous {
 
 		return ACTION_RUN_ONGOING;
 	}
+
+
+	std::string get_action_type(std::shared_ptr<Action>& action) {
+		if (std::dynamic_pointer_cast<Align>(action)) {
+			return "ALIGN";
+
+		} else if (std::dynamic_pointer_cast<Travel>(action)) {
+			return "TRAVEL";
+			
+		} else if (std::dynamic_pointer_cast<ColorSort>(action)) {
+			return "COLSORT";
+			
+		} else if (std::dynamic_pointer_cast<Intake>(action)) {
+			return "INTAKE";
+			
+		} else {
+			return "UNKNOWN";
+		}
+	}
 }

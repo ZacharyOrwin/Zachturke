@@ -129,7 +129,10 @@ namespace Autonomous {
 		std::vector<std::string> parameter_tokens,
 		std::function<void(G&, ParameterToken, ValueToken)> parser_function)
 	{
-		for (auto it = parameter_tokens.begin(); it == parameter_tokens.end() - 1; it += 2) {
+		for (auto it = parameter_tokens.begin();
+			it < parameter_tokens.end() && (it + 1) < parameter_tokens.end();
+			it += 2
+		) {
 			ParameterToken t = *it;
 			ValueToken v = *(it+1);
 

@@ -60,7 +60,7 @@ namespace Autonomous {
 			float epsilon;
 			float timeout;
 
-			Config(KBA k, float a, float e, float t=10, bool b=true) :
+			Config(KBA k, float a, float e, float t=5, bool b=true) :
 				BConfig(b), kba(k), angle(a), epsilon(e), timeout(t) {}
 		};
 
@@ -76,7 +76,7 @@ namespace Autonomous {
 			float epsilon;
 			float timeout;
 
-			Config(KBA k, float d, float e, float t=10, bool b=true) :
+			Config(KBA k, float d, float e, float t=5, bool b=true) :
 				BConfig(b), kba(k), dist(d), epsilon(e), timeout(t) {}
 		};
 
@@ -120,6 +120,8 @@ namespace Autonomous {
 		ActionRunStatus run_tick() override;
 		static void parse(Intake::Config& cfg, ParameterToken t, ValueToken v);
 	};
+
+        std::string get_action_type(std::shared_ptr<Action>& action);
 
 	typedef std::pair<std::string, std::queue<std::shared_ptr<Action>>> Routine;
 
