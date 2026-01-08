@@ -7,30 +7,11 @@ namespace Controls {
 
 	// Each of the functions below are getting called every 10 milliseconds within a while loop.
 
-	void processLeftJoystick() {
+	void processDrive() {
 		pros::Controller& controller = BotConnections::controller;
-
 
 		int Y = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-
-		// Store Y somewhere accessible
-		Properties::drive_y = Y;
-	}
-
-
-	void processRightJoystick() {
-		pros::Controller& controller = BotConnections::controller;
-
-			int X = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
-
-			Properties::drive_x = X;
-		};
-
-		// Do something with the input.
-	}
-	void processDrive() {
-		int Y = Properties::drive_y;
-		int X = Properties::drive_x;
+		int X = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
 		int left_power  = Y + X;
 		int right_power = Y - X;
@@ -40,24 +21,32 @@ namespace Controls {
 	}
 
 
-	void processLeftTriggers() {
+	void processIntake() {
 		pros::Controller& controller = BotConnections::controller;
 
-		// Currently Pressed.
+		bool R1_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1);
 		bool L1_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
 		bool L2_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2);
-		// Just Pressed.
-		bool L1_pressed = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L1);
-		bool L2_pressed = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_L2);
-		// Just Released.
-		bool L1_released = controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_L1);
-		bool L2_released = controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_L2);
 
-		// If statements below utilizing the conditions above.
+		// Priority: R1 > L1 > L2 > Off
+		if (R1_on) {
+			Properties::intake_mode = Properties::INTAKE_REVERSE;
+			Properties::intake_active = true;
+		} else if (L1_on) {
+			Properties::intake_mode = Properties::INTAKE_TOP;
+			Properties::intake_active = true;
+		} else if (L2_on) {
+			Properties::intake_mode = Properties::INTAKE_BOTTOM;
+			Properties::intake_active = true;
+		} else {
+			Properties::intake_mode = Properties::INTAKE_OFF;
+			Properties::intake_active = false;
+		}
 	}
 
 
-	void processHoodControl() {
+
+	void processHood() {
 		pros::Controller& controller = BotConnections::controller;
 
 		bool R2_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2);
@@ -67,48 +56,52 @@ namespace Controls {
 
 
 
-	void processLeftButtons() {
+
+	void processToggles() {
 		pros::Controller& controller = BotConnections::controller;
 
-		// Currently Pressed.
-		bool up_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP);
+		static bool lil_will_state = false;
+		static bool descore_state = false;
+
+		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B)) {
+			lil_will_state = !lil_will_state;
+			BotConnections::unloader.set_value(lil_will_state);
+		}
+
+		if (controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A)) {
+			descore_state = !descore_state;
+			BotConnections::descore.set_value(descore_state);
+		}
+	}
+
+
+
+	void processPark() {
+		pros::Controller& controller = BotConnections::controller;
+
+		static bool park_state = false;
+
 		bool down_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN);
-		bool left_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT);
-		bool right_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_RIGHT);
-		// Just Pressed.
-		bool up_pressed = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_UP);
-		bool down_pressed = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_DOWN);
-		bool left_pressed = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_LEFT);
-		bool right_pressed = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_RIGHT);
-		// Just Released.
-		bool up_released = controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_UP);
-		bool down_released = controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_DOWN);
-		bool left_released = controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_LEFT);
-		bool right_released = controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_RIGHT);
+		bool up_on   = controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP);
 
-		// If statements below utilizing the conditions above.
+		double dist_mm = BotConnections::dist_sens.get_distance();
+
+		if (down_on) {
+			if (dist_mm >= 35) {
+				BotConnections::intake_A.move(-40);
+				BotConnections::intake_B.move(-40);
+			} else if (!park_state) {
+				BotConnections::intake_A.move_relative(-36, 40); // ~0.1 turns
+				BotConnections::intake_B.move_relative(-36, 40);
+
+				BotConnections::park_mech.set_value(true);
+				park_state = true;
+			}
+		}
+
+		if (up_on) {
+			BotConnections::park_mech.set_value(false);
+			park_state = false;
+		}
 	}
 
-
-	void processRightButtons() {
-		pros::Controller& controller = BotConnections::controller;
-
-		// Currently Pressed.
-		bool A_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_A);
-		bool B_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_B);
-		bool X_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_X);
-		bool Y_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y);
-		// Just Pressed.
-		bool A_pressed = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_A);
-		bool B_pressed = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_B);
-		bool X_pressed = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_X);
-		bool Y_pressed = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_Y);
-		// Just Released.
-		bool A_released = controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_A);
-		bool B_released = controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_B);
-		bool X_released = controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_X);
-		bool Y_released = controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_Y);
-
-		// If statements below utilizing the conditions above.
-	}
-}
