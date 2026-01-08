@@ -7,6 +7,23 @@
 
 namespace Autonomous {
 
+	ActionRunStatus Toggleable::process_toggle(bool& global_toggle_state) {
+		if (!global_toggle_state && !toggled) {
+			global_toggle_state = true;
+			toggled = true;
+			return ACTION_RUN_ONGOING;
+
+		} else if (global_toggle_state && !toggled) {
+			global_toggle_state = false;
+			toggled = true;
+			return ACTION_RUN_COMPLETE;
+
+		} else {
+			return ACTION_RUN_ONGOING;
+		}
+	}
+
+
 	ActionRunStatus Align::run_tick() {
 		// Input.
                 Config* cfg = static_cast<Config*>(c.get());
@@ -99,21 +116,15 @@ namespace Autonomous {
 		double hue = BotConnections::vis_sens.get_hue();
 
 		// Exit Condition.
-		if (cfg->toggling && !Properties::col_sort_active && !toggled) {
-			Properties::col_sort_active = true;
-			toggled = true;
-
-		} else if (cfg->toggling && Properties::col_sort_active && !toggled) {
-			Properties::col_sort_active = false;
+		if (
+			cfg->toggling && process_toggle(col_sort_toggle_state) == ACTION_RUN_COMPLETE
+			|| !cfg->toggling && (time > cfg->timeout || !col_sort_toggle_state)
+		) {
 			BotConnections::flap.set_value(false);
-			return ACTION_RUN_COMPLETE;
-
-		} else if (toggled) {
-
-		} else if (time > cfg->timeout || !Properties::col_sort_active) {
-			BotConnections::flap.set_value(false);
+			col_sort_toggle_state = false;
 			return ACTION_RUN_COMPLETE;
 		}
+		
 
 		// Output.
 		bool is_red = (hue >= 350 || hue <= 10);
@@ -139,23 +150,14 @@ namespace Autonomous {
 		Properties::intake_mode = cfg->intake_mode;
 
 		// Exit Condition.
-		if (cfg->toggling && !Properties::intake_active && !toggled) {
-			Properties::intake_active = true;
-			toggled = true;
-
-		} else if (cfg->toggling && Properties::intake_active && !toggled) {
-			Properties::intake_active = false;
+		if (
+			cfg->toggling && process_toggle(intake_toggle_state) == ACTION_RUN_COMPLETE
+			|| !cfg->toggling && (time > cfg->timeout || !intake_toggle_state)
+		) {
 			BotConnections::intake_A.brake();
 			BotConnections::intake_B.brake();
 			BotConnections::intake_C.brake();
-			return ACTION_RUN_COMPLETE;
-
-		} else if (toggled) {
-
-		} else if (time > cfg->timeout || !Properties::intake_active) {
-			BotConnections::intake_A.brake();
-			BotConnections::intake_B.brake();
-			BotConnections::intake_C.brake();
+			intake_toggle_state = false;
 			return ACTION_RUN_COMPLETE;
 		}
 

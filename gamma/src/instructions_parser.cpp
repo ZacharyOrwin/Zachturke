@@ -7,10 +7,10 @@ namespace Autonomous {
 
 	std::string routines_directory = "/";
 
-	Align::Config def_align_cfg(KBA(), 0.0, 0.0);
-	Travel::Config def_travel_cfg(KBA(), 0.0, 0.0);
-	ColorSort::Config def_col_sort_cfg(COLOR_SORT_RED);
-	Intake::Config def_intake_cfg(Properties::INTAKE_TOP);
+	Align::Config def_align_cfg(KBA(), 0.0, 0.0, 5.0, true);
+	Travel::Config def_travel_cfg(KBA(), 0.0, 0.0, 5.0, true);
+	ColorSort::Config def_col_sort_cfg(COLOR_SORT_RED, 5.0, false, true);
+	Intake::Config def_intake_cfg(Properties::INTAKE_TOP, 5.0, false, true);
 
 
 	void load_routine_files() {
@@ -208,11 +208,20 @@ namespace Autonomous {
 		} else if (t == "TOG") {
 			cfg.toggling = std::stoi(v);
 
+			if (cfg.toggling) {
+				cfg.blocking = false;
+				ColorSort::col_sort_toggle_state = cfg.toggling && !ColorSort::col_sort_toggle_state;
+			}
+
 		} else if (t == "TIME") {
 			cfg.timeout = std::stof(v);
 
 		} else if (t == "BLK") {
-			cfg.blocking = std::stoi(v);
+			if (!cfg.toggling) {
+				cfg.blocking = std::stoi(v);
+			} else {
+				cfg.blocking = false;
+			}
 		}
 	}
 
@@ -230,11 +239,20 @@ namespace Autonomous {
 		} else if (t == "TOG") {
 			cfg.toggling = std::stoi(v);
 
+			if (cfg.toggling) {
+				cfg.blocking = false;
+				Intake::intake_toggle_state = cfg.toggling && !Intake::intake_toggle_state;
+			}
+
 		} else if (t == "TIME") {
 			cfg.timeout = std::stof(v);
 
 		} else if (t == "BLK") {
-			cfg.blocking = std::stoi(v);
+			if (!cfg.toggling) {
+				cfg.blocking = std::stoi(v);
+			} else {
+				cfg.blocking = false;
+			}
 		}
 	}
 }

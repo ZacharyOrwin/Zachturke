@@ -37,10 +37,16 @@ namespace Autonomous {
 		static KBA parse(ValueToken v);
 	};
 
+        struct Toggleable {
+                bool toggled;
+
+                ActionRunStatus process_toggle(bool& global_toggle_state);
+        };
+
 	struct BConfig {
 		bool blocking = true;
 
-		BConfig(bool b = true) : blocking(b) {}
+		BConfig(bool b) : blocking(b) {}
 		virtual ~BConfig() = default;
 	};
 
@@ -53,14 +59,14 @@ namespace Autonomous {
 		virtual ActionRunStatus run_tick() = 0;
 	};
 
-	struct Align : public Action {
-		struct Config : public BConfig {
+	struct Align : Action {
+		struct Config : BConfig {
 			KBA kba;
 			float angle;
 			float epsilon;
 			float timeout;
 
-			Config(KBA k, float a, float e, float t=5, bool b=true) :
+			Config(KBA k, float a, float e, float t, bool b) :
 				BConfig(b), kba(k), angle(a), epsilon(e), timeout(t) {}
 		};
 
@@ -69,14 +75,14 @@ namespace Autonomous {
 		static void parse(Align::Config& cfg, ParameterToken t, ValueToken v);
 	};
 
-	struct Travel : public Action {
-		struct Config : public BConfig {
+	struct Travel : Action {
+		struct Config : BConfig {
 			KBA kba;
 			float dist;
 			float epsilon;
 			float timeout;
 
-			Config(KBA k, float d, float e, float t=5, bool b=true) :
+			Config(KBA k, float d, float e, float t, bool b) :
 				BConfig(b), kba(k), dist(d), epsilon(e), timeout(t) {}
 		};
 
@@ -87,34 +93,34 @@ namespace Autonomous {
 		static void parse(Travel::Config& cfg, ParameterToken t, ValueToken v);
 	};
 
-	struct ColorSort : public Action {
-		struct Config : public BConfig {
+	struct ColorSort : Action, Toggleable {
+		struct Config : BConfig {
 			ColorSortColor color;
 			bool toggling;
 			float timeout;
 
-			Config(ColorSortColor c, float t=5, bool tog=false, bool b=true) :
-				BConfig(!tog && b), color(c), toggling(tog), timeout(t) {}
+			Config(ColorSortColor c, float t, bool tog, bool b) :
+				BConfig(b), color(c), toggling(tog), timeout(t) {}
 		};
 
-		bool toggled;
+                static inline bool col_sort_toggle_state;
 
 		ColorSort(Config c) : Action(std::make_shared<Config>(c)) {}
 		ActionRunStatus run_tick() override;
 		static void parse(ColorSort::Config& cfg, ParameterToken t, ValueToken v);
 	};
 
-	struct Intake : public Action {
-		struct Config : public BConfig {
+	struct Intake : Action, Toggleable {
+		struct Config : BConfig {
 			Properties::IntakeMode intake_mode;
 			bool toggling;
-			float timeout;
+			float timeout; 
 
-			Config(Properties::IntakeMode i_m, float t=5, bool tog=false, bool b=true) :
-				BConfig(!tog && b), intake_mode(i_m), toggling(tog), timeout(t) {}
+			Config(Properties::IntakeMode i_m, float t, bool tog, bool b) :
+				BConfig(b), intake_mode(i_m), toggling(tog), timeout(t) {}
 		};
 
-		bool toggled;
+                static inline bool intake_toggle_state;
 
 		Intake(Config c) : Action(std::make_shared<Config>(c)) {}
 		ActionRunStatus run_tick() override;

@@ -20,8 +20,6 @@ namespace Properties {
 	inline int global_time_msec;
 	inline int screen_refresh_cycles;
 	inline IntakeMode intake_mode = INTAKE_TOP;
-	inline bool col_sort_active;
-	inline bool intake_active;
 
 	inline float get_gear_ratio(pros::v5::MotorGears gear_set) {
 		switch (gear_set)
