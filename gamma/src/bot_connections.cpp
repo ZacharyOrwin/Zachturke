@@ -5,6 +5,7 @@ namespace BotConnections {
 	
 	pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
+	// Temporarily Configured for Claw Bot.
 	pros::MotorGroup left_mg({1} /*{-7,3,-2}*/);
 	pros::MotorGroup right_mg({-10} /*{8,-9,10}*/);
 
