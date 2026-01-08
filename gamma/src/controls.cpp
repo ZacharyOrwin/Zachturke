@@ -57,21 +57,14 @@ namespace Controls {
 	}
 
 
-	void processRightTriggers() {
+	void processHoodControl() {
 		pros::Controller& controller = BotConnections::controller;
 
-		// Currently Pressed.
-		bool R1_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1);
 		bool R2_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2);
-		// Just Pressed.
-		bool R1_pressed = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R1);
-		bool R2_pressed = controller.get_digital_new_press(pros::E_CONTROLLER_DIGITAL_R2);
-		// Just Released.
-		bool R1_released = controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_R1);
-		bool R2_released = controller.get_digital_new_release(pros::E_CONTROLLER_DIGITAL_R2);
 
-		// If statements below utilizing the conditions above.
+		BotConnections::hood.set_value(R2_on);
 	}
+
 
 
 	void processLeftButtons() {
