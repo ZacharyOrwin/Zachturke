@@ -1,5 +1,7 @@
 #include "controls.hpp"
+#include "autonomous.hpp"
 #include "bot_connections.hpp"
+#include "properties.hpp"
 #include "vector2.hpp"
 
 
@@ -31,19 +33,18 @@ namespace Controls {
 		// Priority: R1 > L1 > L2 > Off
 		if (R1_on) {
 			Properties::intake_mode = Properties::INTAKE_REVERSE;
-			Properties::intake_active = true;
+			Autonomous::Intake::intake_toggle_state = true;
 		} else if (L1_on) {
 			Properties::intake_mode = Properties::INTAKE_TOP;
-			Properties::intake_active = true;
+			Autonomous::Intake::intake_toggle_state = true;
 		} else if (L2_on) {
 			Properties::intake_mode = Properties::INTAKE_BOTTOM;
-			Properties::intake_active = true;
+			Autonomous::Intake::intake_toggle_state = true;
 		} else {
 			Properties::intake_mode = Properties::INTAKE_OFF;
-			Properties::intake_active = false;
+			Autonomous::Intake::intake_toggle_state = false;
 		}
 	}
-
 
 
 	void processHood() {
@@ -53,8 +54,6 @@ namespace Controls {
 
 		BotConnections::hood.set_value(R2_on);
 	}
-
-
 
 
 	void processToggles() {
@@ -73,7 +72,6 @@ namespace Controls {
 			BotConnections::descore.set_value(descore_state);
 		}
 	}
-
 
 
 	void processPark() {
@@ -104,4 +102,4 @@ namespace Controls {
 			park_state = false;
 		}
 	}
-
+}

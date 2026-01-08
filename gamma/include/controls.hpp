@@ -5,10 +5,9 @@
 
 namespace Controls {
 	
-	void processLeftJoystick();
-	void processRightJoystick();
-	void processLeftTriggers();
-	void processRightTriggers();
-	void processLeftButtons();
-	void processRightButtons();
+	void processDrive();
+	void processIntake();
+	void processHood();
+	void processToggles();
+	void processPark();
 }
