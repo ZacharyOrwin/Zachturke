@@ -11,26 +11,32 @@ namespace Controls {
 		pros::Controller& controller = BotConnections::controller;
 
 
-		int x = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_X);
-		int y = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+		int Y = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
 
-		int left_power  = y + x;
-		int right_power = y - x;
-
-		BotConnections::left_mg.move(left_power);
-		BotConnections::right_mg.move(right_power);
+		// Store Y somewhere accessible
+		Properties::drive_y = Y;
 	}
 
 
 	void processRightJoystick() {
 		pros::Controller& controller = BotConnections::controller;
 
-		Vector2 input {
-			controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X),
-			controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y)
+			int X = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+
+			Properties::drive_x = X;
 		};
 
 		// Do something with the input.
+	}
+	void processDrive() {
+		int Y = Properties::drive_y;
+		int X = Properties::drive_x;
+
+		int left_power  = Y + X;
+		int right_power = Y - X;
+
+		BotConnections::left_mg.move(left_power);
+		BotConnections::right_mg.move(right_power);
 	}
 
 
