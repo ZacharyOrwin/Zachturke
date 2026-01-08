@@ -80,11 +80,10 @@ void opcontrol() {
 	while (true) {
 		pros::delay(Properties::TICK_DELAY_MSEC);
 
-		processLeftJoystick();
-		processRightJoystick();
-		processLeftTriggers();
-		processRightTriggers();
-		processLeftButtons();
-		processRightButtons();
+		processDrive();
+		processIntake();
+		processHood();
+		processToggles();
+		processPark();
 	}
 }
