@@ -26,9 +26,9 @@ namespace Autonomous {
 	typedef std::string ParameterToken, ValueToken;
 
 	struct KBA {
-		float k;
-		float b;
-		float a;
+		float k = 0;
+		float b = 0;
+		float a = 0;
 
 		float output(float t) {
 			return std::min(std::max(t*k, a), b);
@@ -38,9 +38,7 @@ namespace Autonomous {
 	};
 
         struct Toggleable {
-                bool toggled;
-
-                ActionRunStatus process_toggle(bool& global_toggle_state);
+                ActionRunStatus process_toggle(bool global_toggle_state);
         };
 
 	struct BConfig {
@@ -51,20 +49,21 @@ namespace Autonomous {
 	};
 
 	struct Action {
-		float time = 0;
+		float time = 0.0;
 
 		std::shared_ptr<BConfig> c;
                 Action(std::shared_ptr<BConfig> c) : c(std::move(c)) {}
 		virtual ~Action() = default;
 		virtual ActionRunStatus run_tick() = 0;
+                virtual void start() = 0;
 	};
 
 	struct Align : Action {
 		struct Config : BConfig {
 			KBA kba;
-			float angle;
-			float epsilon;
-			float timeout;
+			float angle = 0.0;
+			float epsilon = 0.0;
+			float timeout = 0.0;
 
 			Config(KBA k, float a, float e, float t, bool b) :
 				BConfig(b), kba(k), angle(a), epsilon(e), timeout(t) {}
@@ -72,59 +71,71 @@ namespace Autonomous {
 
 		Align(Config c) : Action(std::make_shared<Config>(c)) {}
 		ActionRunStatus run_tick() override;
+                void start() override;
+
 		static void parse(Align::Config& cfg, ParameterToken t, ValueToken v);
+                static void parse_cleanup(Align::Config& cfg);
 	};
 
 	struct Travel : Action {
 		struct Config : BConfig {
 			KBA kba;
-			float dist;
-			float epsilon;
-			float timeout;
+			float dist = 0.0;
+			float epsilon = 0.0;
+			float timeout = 0.0;
 
 			Config(KBA k, float d, float e, float t, bool b) :
 				BConfig(b), kba(k), dist(d), epsilon(e), timeout(t) {}
 		};
 
-                float accum_dist;
+                float accum_dist = 0.0;
 
 		Travel(Config c) : Action(std::make_shared<Config>(c)) {}
 		ActionRunStatus run_tick() override;
+                void start() override;
+
 		static void parse(Travel::Config& cfg, ParameterToken t, ValueToken v);
+                static void parse_cleanup(Travel::Config& cfg);
 	};
 
 	struct ColorSort : Action, Toggleable {
 		struct Config : BConfig {
-			ColorSortColor color;
-			bool toggling;
-			float timeout;
+			ColorSortColor color = COLOR_SORT_RED;
+			bool toggling = false;
+			float timeout = 0.0;
 
 			Config(ColorSortColor c, float t, bool tog, bool b) :
 				BConfig(b), color(c), toggling(tog), timeout(t) {}
 		};
 
-                static inline bool col_sort_toggle_state;
+                static inline bool col_sort_toggle_state = false;
 
 		ColorSort(Config c) : Action(std::make_shared<Config>(c)) {}
 		ActionRunStatus run_tick() override;
+                void start() override;
+
 		static void parse(ColorSort::Config& cfg, ParameterToken t, ValueToken v);
+                static void parse_cleanup(ColorSort::Config& cfg);
 	};
 
 	struct Intake : Action, Toggleable {
 		struct Config : BConfig {
 			Properties::IntakeMode intake_mode;
-			bool toggling;
-			float timeout; 
+			bool toggling = false;
+			float timeout = 0.0; 
 
 			Config(Properties::IntakeMode i_m, float t, bool tog, bool b) :
 				BConfig(b), intake_mode(i_m), toggling(tog), timeout(t) {}
 		};
 
-                static inline bool intake_toggle_state;
+                static inline bool intake_toggle_state = false;
 
 		Intake(Config c) : Action(std::make_shared<Config>(c)) {}
 		ActionRunStatus run_tick() override;
+                void start() override;
+
 		static void parse(Intake::Config& cfg, ParameterToken t, ValueToken v);
+                static void parse_cleanup(Intake::Config& cfg);
 	};
 
         std::string get_action_type(std::shared_ptr<Action>& action);
@@ -154,6 +165,7 @@ namespace Autonomous {
 	G parse_parameter_tokens(
 		G& cfg,
 		std::vector<std::string> parameter_tokens,
-		std::function<void(G&, ParameterToken, ValueToken)> parser_function
+		std::function<void(G&, ParameterToken, ValueToken)> parser_function,
+                std::function<void(G&)> parser_cleanup_function
 	);
 }

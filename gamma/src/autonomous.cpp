@@ -26,7 +26,11 @@ namespace Autonomous {
 
 	void start_next_action() {
 		if (!actions_queue.empty()) {
-			actions_running.push_back(actions_queue.front());
+                        auto& action = actions_queue.front();
+
+                        action->start();
+
+			actions_running.push_back(action);
 			actions_queue.pop();
 		}
 	}

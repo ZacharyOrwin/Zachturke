@@ -7,17 +7,9 @@
 
 namespace Autonomous {
 
-	ActionRunStatus Toggleable::process_toggle(bool& global_toggle_state) {
-		if (!global_toggle_state && !toggled) {
-			global_toggle_state = true;
-			toggled = true;
-			return ACTION_RUN_ONGOING;
-
-		} else if (global_toggle_state && !toggled) {
-			global_toggle_state = false;
-			toggled = true;
+	ActionRunStatus Toggleable::process_toggle(bool global_toggle_state) {
+		if (!global_toggle_state) {
 			return ACTION_RUN_COMPLETE;
-
 		} else {
 			return ACTION_RUN_ONGOING;
 		}
@@ -84,25 +76,31 @@ namespace Autonomous {
 		float left_vel = left_mg.get_actual_velocity();
 		float right_vel = right_mg.get_actual_velocity();
 		float avg_vel = Properties::FINAL_DRIVE_RATIO
-			* Properties::get_gear_ratio(left_mg.get_gearing())
-			* (left_vel + right_vel) / 2;
+			* XMath::rpmToRads((left_vel + right_vel) / 2);
 
 		float diff = cfg->dist - accum_dist;
 
+		
+		printf("%f\n", diff);
+		printf("%f\n", cfg->epsilon);
+
 		// Exit Condition.
-		if (time > cfg->timeout || diff < cfg->epsilon) {
+		if (time > cfg->timeout || std::abs(diff) < cfg->epsilon) {
 			left_mg.brake();
 			right_mg.brake();
 			return ACTION_RUN_COMPLETE;
 		}
 
 		// Output.
-		float push = cfg->kba.output(diff);
+		float push = XMath::sgn<float>(diff) * cfg->kba.output(std::abs(diff));
 
 		left_mg.move(push);
 		right_mg.move(push);
 
-		accum_dist += avg_vel * Properties::TICK_DELAY_MSEC/1000.0;
+		accum_dist += Properties::WHEEL_DIAMETER_IN/2
+			* avg_vel
+			* Properties::TICK_DELAY_MSEC/1000.0;
+		
 		time += Properties::TICK_DELAY_MSEC/1000.0;
 
 		return ACTION_RUN_ONGOING;
@@ -124,7 +122,6 @@ namespace Autonomous {
 			col_sort_toggle_state = false;
 			return ACTION_RUN_COMPLETE;
 		}
-		
 
 		// Output.
 		bool is_red = (hue >= 350 || hue <= 10);
@@ -190,6 +187,34 @@ namespace Autonomous {
 		time += Properties::TICK_DELAY_MSEC/1000.0;
 
 		return ACTION_RUN_ONGOING;
+	}
+
+
+	void Align::start() {}
+
+
+	void Travel::start() {}
+
+
+	void ColorSort::start() {
+		Config* cfg = static_cast<Config*>(c.get());
+
+		if (cfg->toggling) {
+			col_sort_toggle_state = !col_sort_toggle_state;
+		} else {
+			col_sort_toggle_state = true;
+		}
+	}
+
+
+	void Intake::start() {
+		Config* cfg = static_cast<Config*>(c.get());
+
+		if (cfg->toggling) {
+			intake_toggle_state = !intake_toggle_state;
+		} else {
+			intake_toggle_state = true;
+		}
 	}
 
 

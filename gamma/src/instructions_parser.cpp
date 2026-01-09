@@ -83,7 +83,8 @@ namespace Autonomous {
 					parse_parameter_tokens<Align, Align::Config>(
 						def_align_cfg,
 						param_tokens,
-						Align::parse
+						Align::parse,
+						Align::parse_cleanup
 					)
 				);
 
@@ -92,7 +93,8 @@ namespace Autonomous {
 					parse_parameter_tokens<Travel, Travel::Config>(
 						def_travel_cfg,
 						param_tokens,
-						Travel::parse
+						Travel::parse,
+						Travel::parse_cleanup
 					)
 				);
 
@@ -101,7 +103,8 @@ namespace Autonomous {
 					parse_parameter_tokens<ColorSort, ColorSort::Config>(
 						def_col_sort_cfg,
 						param_tokens,
-						ColorSort::parse
+						ColorSort::parse,
+						ColorSort::parse_cleanup
 					)
 				);
 
@@ -110,7 +113,8 @@ namespace Autonomous {
 					parse_parameter_tokens<Intake, Intake::Config>(
 						def_intake_cfg,
 						param_tokens,
-						Intake::parse
+						Intake::parse,
+						Intake::parse_cleanup
 					)
 				);
 
@@ -127,8 +131,9 @@ namespace Autonomous {
 	G parse_parameter_tokens(
 		G& cfg,
 		std::vector<std::string> parameter_tokens,
-		std::function<void(G&, ParameterToken, ValueToken)> parser_function)
-	{
+		std::function<void(G&, ParameterToken, ValueToken)> parser_function,
+		std::function<void(G&)> parser_cleanup_function
+	) {
 		for (auto it = parameter_tokens.begin();
 			it < parameter_tokens.end() && (it + 1) < parameter_tokens.end();
 			it += 2
@@ -138,6 +143,8 @@ namespace Autonomous {
 
 			parser_function(cfg, t, v);
 		}
+
+		parser_cleanup_function(cfg);
 
 		return cfg;
 	}
@@ -208,20 +215,11 @@ namespace Autonomous {
 		} else if (t == "TOG") {
 			cfg.toggling = std::stoi(v);
 
-			if (cfg.toggling) {
-				cfg.blocking = false;
-				ColorSort::col_sort_toggle_state = cfg.toggling && !ColorSort::col_sort_toggle_state;
-			}
-
 		} else if (t == "TIME") {
 			cfg.timeout = std::stof(v);
 
 		} else if (t == "BLK") {
-			if (!cfg.toggling) {
-				cfg.blocking = std::stoi(v);
-			} else {
-				cfg.blocking = false;
-			}
+			cfg.blocking = std::stoi(v);
 		}
 	}
 
@@ -239,20 +237,27 @@ namespace Autonomous {
 		} else if (t == "TOG") {
 			cfg.toggling = std::stoi(v);
 
-			if (cfg.toggling) {
-				cfg.blocking = false;
-				Intake::intake_toggle_state = cfg.toggling && !Intake::intake_toggle_state;
-			}
-
 		} else if (t == "TIME") {
 			cfg.timeout = std::stof(v);
 
 		} else if (t == "BLK") {
-			if (!cfg.toggling) {
-				cfg.blocking = std::stoi(v);
-			} else {
-				cfg.blocking = false;
-			}
+			cfg.blocking = std::stoi(v);
 		}
+	}
+
+
+	void Align::parse_cleanup(Align::Config& cfg) {}
+
+
+	void Travel::parse_cleanup(Travel::Config& cfg) {}
+
+
+	void ColorSort::parse_cleanup(ColorSort::Config& cfg) {
+		cfg.blocking = !cfg.toggling && cfg.blocking;
+	}
+
+
+	void Intake::parse_cleanup(Intake::Config& cfg) {
+		cfg.blocking = !cfg.toggling && cfg.blocking;
 	}
 }

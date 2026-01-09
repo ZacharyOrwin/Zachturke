@@ -10,10 +10,10 @@ namespace XMath {
         }
 
         float rad(float degrees) {
-                return degrees * (std::numbers::pi / 180.0);
+                return degrees * std::numbers::pi / 180.0;
         }
 
         float rpmToRads(float rpm) {
-                return rpm * 2.0 * std::numbers::pi / 60.0;
+                return rpm * std::numbers::pi / 30.0;
         }
 }

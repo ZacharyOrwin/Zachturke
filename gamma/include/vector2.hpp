@@ -5,8 +5,8 @@
 
 struct Vector2 {
 	
-	float x;
-	float y;
+	float x = 0.0;
+	float y = 0.0;
 
 	Vector2 operator+(const Vector2 &other) {
 		return Vector2{x + other.x, y + other.y};

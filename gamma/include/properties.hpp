@@ -15,10 +15,10 @@ namespace Properties {
 	inline constexpr int TICK_DELAY_MSEC = 10;
 	inline constexpr int SCREEN_REFRESH_DELAY_MSEC = 400;
 	inline constexpr int MAX_MOTOR_VOLTS = 127;
-	inline constexpr float FINAL_DRIVE_RATIO = 2/3.0;
+	inline constexpr float FINAL_DRIVE_RATIO = 1.0 /*2/3.0*/;
 	inline constexpr float WHEEL_DIAMETER_IN = 3.25;
-	inline int global_time_msec;
-	inline int screen_refresh_cycles;
+	inline int global_time_msec = 0;
+	inline int screen_refresh_cycles = 0;
 	inline IntakeMode intake_mode = INTAKE_TOP;
 
 	inline float get_gear_ratio(pros::v5::MotorGears gear_set) {
