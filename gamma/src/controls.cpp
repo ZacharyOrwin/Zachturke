@@ -33,16 +33,16 @@ namespace Controls {
 		// Priority: R1 > L1 > L2 > Off
 		if (R1_on) {
 			Properties::intake_mode = Properties::INTAKE_REVERSE;
-			Autonomous::Intake::intake_toggle_state = true;
+			Autonomous::Intake::toggle_state = true;
 		} else if (L1_on) {
 			Properties::intake_mode = Properties::INTAKE_TOP;
-			Autonomous::Intake::intake_toggle_state = true;
+			Autonomous::Intake::toggle_state = true;
 		} else if (L2_on) {
 			Properties::intake_mode = Properties::INTAKE_BOTTOM;
-			Autonomous::Intake::intake_toggle_state = true;
+			Autonomous::Intake::toggle_state = true;
 		} else {
 			Properties::intake_mode = Properties::INTAKE_OFF;
-			Autonomous::Intake::intake_toggle_state = false;
+			Autonomous::Intake::toggle_state = false;
 		}
 	}
 

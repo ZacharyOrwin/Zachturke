@@ -18,11 +18,6 @@ namespace Autonomous {
 		ACTIONS_UNBLOCKED
 	};
 
-	enum ColorSortColor {
-		COLOR_SORT_RED,
-		COLOR_SORT_BLUE
-	};
-
 	typedef std::string ParameterToken, ValueToken;
 
 	struct KBA {
@@ -37,8 +32,23 @@ namespace Autonomous {
 		static KBA parse(ValueToken v);
 	};
 
+        struct KBAIterable {
+                KBA kba;
+                float epsilon = 0.0;
+                float timeout = 0.0;
+
+                KBAIterable(KBA k, float e, float t) : kba(k), epsilon(e), timeout(t) {}
+                virtual ~KBAIterable() = default;
+        };
+
         struct Toggleable {
-                ActionRunStatus process_toggle(bool global_toggle_state);
+                bool toggling = false;
+                float timeout = 0.0;
+
+                Toggleable(bool tog, float t) : toggling(tog), timeout(t) {}
+                virtual ~Toggleable() = default;
+
+                static ActionRunStatus process_toggle(bool global_toggle_state);
         };
 
 	struct BConfig {
@@ -59,33 +69,27 @@ namespace Autonomous {
 	};
 
 	struct Align : Action {
-		struct Config : BConfig {
-			KBA kba;
+		struct Config : BConfig, KBAIterable {
 			float angle = 0.0;
-			float epsilon = 0.0;
-			float timeout = 0.0;
 
 			Config(KBA k, float a, float e, float t, bool b) :
-				BConfig(b), kba(k), angle(a), epsilon(e), timeout(t) {}
+				BConfig(b), angle(a), KBAIterable(k, e, t) {}
 		};
 
 		Align(Config c) : Action(std::make_shared<Config>(c)) {}
 		ActionRunStatus run_tick() override;
                 void start() override;
 
-		static void parse(Align::Config& cfg, ParameterToken t, ValueToken v);
-                static void parse_cleanup(Align::Config& cfg);
+		static void parse(Config& cfg, ParameterToken t, ValueToken v);
+                static void parse_cleanup(Config& cfg);
 	};
 
 	struct Travel : Action {
-		struct Config : BConfig {
-			KBA kba;
+		struct Config : BConfig, KBAIterable {
 			float dist = 0.0;
-			float epsilon = 0.0;
-			float timeout = 0.0;
 
 			Config(KBA k, float d, float e, float t, bool b) :
-				BConfig(b), kba(k), dist(d), epsilon(e), timeout(t) {}
+				BConfig(b), dist(d), KBAIterable(k, e, t) {}
 		};
 
                 float accum_dist = 0.0;
@@ -94,48 +98,92 @@ namespace Autonomous {
 		ActionRunStatus run_tick() override;
                 void start() override;
 
-		static void parse(Travel::Config& cfg, ParameterToken t, ValueToken v);
-                static void parse_cleanup(Travel::Config& cfg);
+		static void parse(Config& cfg, ParameterToken t, ValueToken v);
+                static void parse_cleanup(Config& cfg);
 	};
 
-	struct ColorSort : Action, Toggleable {
-		struct Config : BConfig {
-			ColorSortColor color = COLOR_SORT_RED;
-			bool toggling = false;
-			float timeout = 0.0;
+	struct ColorSort : Action {
+		struct Config : BConfig, Toggleable {
+			Properties::ColorSortColor color = Properties::COLOR_SORT_RED;
 
-			Config(ColorSortColor c, float t, bool tog, bool b) :
-				BConfig(b), color(c), toggling(tog), timeout(t) {}
+			Config(Properties::ColorSortColor c, float t, bool tog, bool b) :
+				BConfig(b), color(c), Toggleable(tog, t) {}
 		};
 
-                static inline bool col_sort_toggle_state = false;
+                static inline bool toggle_state = false;
 
 		ColorSort(Config c) : Action(std::make_shared<Config>(c)) {}
 		ActionRunStatus run_tick() override;
                 void start() override;
 
-		static void parse(ColorSort::Config& cfg, ParameterToken t, ValueToken v);
-                static void parse_cleanup(ColorSort::Config& cfg);
+		static void parse(Config& cfg, ParameterToken t, ValueToken v);
+                static void parse_cleanup(Config& cfg);
 	};
 
-	struct Intake : Action, Toggleable {
-		struct Config : BConfig {
+	struct Intake : Action {
+		struct Config : BConfig, Toggleable {
 			Properties::IntakeMode intake_mode;
-			bool toggling = false;
-			float timeout = 0.0; 
 
 			Config(Properties::IntakeMode i_m, float t, bool tog, bool b) :
-				BConfig(b), intake_mode(i_m), toggling(tog), timeout(t) {}
+				BConfig(b), intake_mode(i_m), Toggleable(tog, t) {}
 		};
 
-                static inline bool intake_toggle_state = false;
+                static inline bool toggle_state = false;
 
 		Intake(Config c) : Action(std::make_shared<Config>(c)) {}
 		ActionRunStatus run_tick() override;
                 void start() override;
 
-		static void parse(Intake::Config& cfg, ParameterToken t, ValueToken v);
-                static void parse_cleanup(Intake::Config& cfg);
+		static void parse(Config& cfg, ParameterToken t, ValueToken v);
+                static void parse_cleanup(Config& cfg);
+	};
+
+        struct Hood : Action {
+		struct Config : BConfig, Toggleable {
+			Config(float t, bool tog, bool b) :
+				BConfig(b), Toggleable(tog, t) {}
+		};
+
+                static inline bool toggle_state = false;
+
+		Hood(Config c) : Action(std::make_shared<Config>(c)) {}
+		ActionRunStatus run_tick() override;
+                void start() override;
+
+		static void parse(Config& cfg, ParameterToken t, ValueToken v);
+                static void parse_cleanup(Config& cfg);
+	};
+
+        struct Unloader : Action {
+		struct Config : BConfig, Toggleable {
+			Config(float t, bool tog, bool b) :
+				BConfig(b), Toggleable(tog, t) {}
+		};
+
+                static inline bool toggle_state = false;
+
+		Unloader(Config c) : Action(std::make_shared<Config>(c)) {}
+		ActionRunStatus run_tick() override;
+                void start() override;
+
+		static void parse(Config& cfg, ParameterToken t, ValueToken v);
+                static void parse_cleanup(Config& cfg);
+	};
+
+        struct Descore : Action {
+		struct Config : BConfig, Toggleable {
+			Config(float t, bool tog, bool b) :
+				BConfig(b), Toggleable(tog, t) {}
+		};
+
+                static inline bool toggle_state = false;
+
+		Descore(Config c) : Action(std::make_shared<Config>(c)) {}
+		ActionRunStatus run_tick() override;
+                void start() override;
+
+		static void parse(Config& cfg, ParameterToken t, ValueToken v);
+                static void parse_cleanup(Config& cfg);
 	};
 
         std::string get_action_type(std::shared_ptr<Action>& action);
@@ -158,6 +206,9 @@ namespace Autonomous {
 	extern Travel::Config def_travel_cfg;
 	extern ColorSort::Config def_col_sort_cfg;
 	extern Intake::Config def_intake_cfg;
+        extern Hood::Config def_hood_cfg;
+        extern Unloader::Config def_unloader_cfg;
+        extern Descore::Config def_descore_cfg;
 
 	void load_routine_files();
 	void parse_routine_file(std::filesystem::path path);

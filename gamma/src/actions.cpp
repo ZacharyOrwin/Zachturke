@@ -19,9 +19,9 @@ namespace Autonomous {
 	ActionRunStatus Align::run_tick() {
 		// Input.
                 Config* cfg = static_cast<Config*>(c.get());
-		pros::Imu& imu = BotConnections::imu;
-		pros::MotorGroup& left_mg = BotConnections::left_mg;
-		pros::MotorGroup& right_mg = BotConnections::right_mg;
+		pros::Imu& imu = imu;
+		pros::MotorGroup& left_mg = left_mg;
+		pros::MotorGroup& right_mg = right_mg;
 
 		float curr_ang = imu.get_heading();
         	float curr_rad = XMath::rad(curr_ang);
@@ -70,8 +70,8 @@ namespace Autonomous {
 		// Input.
                 Config* cfg = static_cast<Config*>(c.get());
 
-		pros::MotorGroup& left_mg = BotConnections::left_mg;
-		pros::MotorGroup& right_mg = BotConnections::right_mg;
+		pros::MotorGroup& left_mg = left_mg;
+		pros::MotorGroup& right_mg = right_mg;
 
 		float left_vel = left_mg.get_actual_velocity();
 		float right_vel = right_mg.get_actual_velocity();
@@ -79,10 +79,6 @@ namespace Autonomous {
 			* XMath::rpmToRads((left_vel + right_vel) / 2);
 
 		float diff = cfg->dist - accum_dist;
-
-		
-		printf("%f\n", diff);
-		printf("%f\n", cfg->epsilon);
 
 		// Exit Condition.
 		if (time > cfg->timeout || std::abs(diff) < cfg->epsilon) {
@@ -111,15 +107,17 @@ namespace Autonomous {
 		// Input.
 		Config* cfg = static_cast<Config*>(c.get());
 
+		pros::adi::DigitalOut& flap = flap;
+
 		double hue = BotConnections::vis_sens.get_hue();
 
 		// Exit Condition.
 		if (
-			cfg->toggling && process_toggle(col_sort_toggle_state) == ACTION_RUN_COMPLETE
-			|| !cfg->toggling && (time > cfg->timeout || !col_sort_toggle_state)
+			cfg->toggling && Toggleable::process_toggle(toggle_state) == ACTION_RUN_COMPLETE
+			|| !cfg->toggling && (time > cfg->timeout || !toggle_state)
 		) {
-			BotConnections::flap.set_value(false);
-			col_sort_toggle_state = false;
+			flap.set_value(false);
+			toggle_state = false;
 			return ACTION_RUN_COMPLETE;
 		}
 
@@ -128,10 +126,12 @@ namespace Autonomous {
 		bool is_blue = (hue >= 200 && hue <= 220);
 
 		// Backdoor DEFINITE WIP
-		if (is_red && cfg->color == COLOR_SORT_BLUE || is_blue && cfg->color == COLOR_SORT_RED) {
-			BotConnections::flap.set_value(true);
+		if (is_red && cfg->color == Properties::COLOR_SORT_BLUE
+			|| is_blue && cfg->color == Properties::COLOR_SORT_RED
+		) {
+			flap.set_value(true);
 		} else {
-			BotConnections::flap.set_value(false);
+			flap.set_value(false);
 		}
 
 		time += Properties::TICK_DELAY_MSEC/1000.0;
@@ -144,45 +144,121 @@ namespace Autonomous {
 		// Input.
 		Config* cfg = static_cast<Config*>(c.get());
 
+		pros::Motor& intake_A = intake_A;
+		pros::Motor& intake_B = intake_B;
+		pros::Motor& intake_C = intake_C;
+
 		Properties::intake_mode = cfg->intake_mode;
 
 		// Exit Condition.
 		if (
-			cfg->toggling && process_toggle(intake_toggle_state) == ACTION_RUN_COMPLETE
-			|| !cfg->toggling && (time > cfg->timeout || !intake_toggle_state)
+			cfg->toggling && Toggleable::process_toggle(toggle_state) == ACTION_RUN_COMPLETE
+			|| !cfg->toggling && (time > cfg->timeout || !toggle_state)
 		) {
-			BotConnections::intake_A.brake();
-			BotConnections::intake_B.brake();
-			BotConnections::intake_C.brake();
-			intake_toggle_state = false;
+			intake_A.brake();
+			intake_B.brake();
+			intake_C.brake();
+			toggle_state = false;
 			return ACTION_RUN_COMPLETE;
 		}
 
 		// Output.
 		switch (Properties::intake_mode) {
 			case Properties::INTAKE_REVERSE:
-				BotConnections::intake_A.move(-Properties::MAX_MOTOR_VOLTS);
-				BotConnections::intake_B.move(-Properties::MAX_MOTOR_VOLTS);
+				intake_A.move(-Properties::MAX_MOTOR_VOLTS);
+				intake_B.move(-Properties::MAX_MOTOR_VOLTS);
 				break;
 
 			case Properties::INTAKE_TOP:
-				BotConnections::intake_A.move(Properties::MAX_MOTOR_VOLTS);
-				BotConnections::intake_B.move(Properties::MAX_MOTOR_VOLTS);
-				BotConnections::intake_C.move(Properties::MAX_MOTOR_VOLTS);
+				intake_A.move(Properties::MAX_MOTOR_VOLTS);
+				intake_B.move(Properties::MAX_MOTOR_VOLTS);
+				intake_C.move(Properties::MAX_MOTOR_VOLTS);
 				break;
 	
 			case Properties::INTAKE_BOTTOM:
-				BotConnections::intake_A.move(Properties::MAX_MOTOR_VOLTS);
-				BotConnections::intake_B.move(Properties::MAX_MOTOR_VOLTS);
-				BotConnections::intake_C.move(-Properties::MAX_MOTOR_VOLTS);
+				intake_A.move(Properties::MAX_MOTOR_VOLTS);
+				intake_B.move(Properties::MAX_MOTOR_VOLTS);
+				intake_C.move(-Properties::MAX_MOTOR_VOLTS);
 				break;
 	
 			case Properties::INTAKE_OFF:
-				BotConnections::intake_A.brake();
-				BotConnections::intake_B.brake();
-				BotConnections::intake_C.brake();
+				intake_A.brake();
+				intake_B.brake();
+				intake_C.brake();
 				break;
 		}
+
+		time += Properties::TICK_DELAY_MSEC/1000.0;
+
+		return ACTION_RUN_ONGOING;
+	}
+
+
+	ActionRunStatus Hood::run_tick() {
+		// Input.
+		Config* cfg = static_cast<Config*>(c.get());
+
+		pros::adi::DigitalOut& hood = BotConnections::hood;
+
+		// Exit Condition.
+		if (
+			cfg->toggling && Toggleable::process_toggle(toggle_state) == ACTION_RUN_COMPLETE
+			|| !cfg->toggling && (time > cfg->timeout || !toggle_state)
+		) {
+			hood.set_value(false);
+			toggle_state = false;
+			return ACTION_RUN_COMPLETE;
+		}
+
+		hood.set_value(true);
+
+		time += Properties::TICK_DELAY_MSEC/1000.0;
+
+		return ACTION_RUN_ONGOING;
+	}
+
+
+	ActionRunStatus Unloader::run_tick() {
+		// Input.
+		Config* cfg = static_cast<Config*>(c.get());
+
+		pros::adi::DigitalOut& unloader = BotConnections::unloader;
+
+		// Exit Condition.
+		if (
+			cfg->toggling && Toggleable::process_toggle(toggle_state) == ACTION_RUN_COMPLETE
+			|| !cfg->toggling && (time > cfg->timeout || !toggle_state)
+		) {
+			unloader.set_value(false);
+			toggle_state = false;
+			return ACTION_RUN_COMPLETE;
+		}
+
+		unloader.set_value(true);
+
+		time += Properties::TICK_DELAY_MSEC/1000.0;
+
+		return ACTION_RUN_ONGOING;
+	}
+
+
+	ActionRunStatus Descore::run_tick() {
+		// Input.
+		Config* cfg = static_cast<Config*>(c.get());
+
+		pros::adi::DigitalOut& descore = BotConnections::descore;
+
+		// Exit Condition.
+		if (
+			cfg->toggling && Toggleable::process_toggle(toggle_state) == ACTION_RUN_COMPLETE
+			|| !cfg->toggling && (time > cfg->timeout || !toggle_state)
+		) {
+			descore.set_value(false);
+			toggle_state = false;
+			return ACTION_RUN_COMPLETE;
+		}
+
+		descore.set_value(true);
 
 		time += Properties::TICK_DELAY_MSEC/1000.0;
 
@@ -200,9 +276,9 @@ namespace Autonomous {
 		Config* cfg = static_cast<Config*>(c.get());
 
 		if (cfg->toggling) {
-			col_sort_toggle_state = !col_sort_toggle_state;
+			toggle_state = !toggle_state;
 		} else {
-			col_sort_toggle_state = true;
+			toggle_state = true;
 		}
 	}
 
@@ -211,11 +287,20 @@ namespace Autonomous {
 		Config* cfg = static_cast<Config*>(c.get());
 
 		if (cfg->toggling) {
-			intake_toggle_state = !intake_toggle_state;
+			toggle_state = !toggle_state;
 		} else {
-			intake_toggle_state = true;
+			toggle_state = true;
 		}
 	}
+
+
+	void Hood::start() {}
+
+
+	void Unloader::start() {}
+
+
+	void Descore::start() {}
 
 
 	std::string get_action_type(std::shared_ptr<Action>& action) {

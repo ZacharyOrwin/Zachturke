@@ -9,8 +9,11 @@ namespace Autonomous {
 
 	Align::Config def_align_cfg(KBA(), 0.0, 0.0, 5.0, true);
 	Travel::Config def_travel_cfg(KBA(), 0.0, 0.0, 5.0, true);
-	ColorSort::Config def_col_sort_cfg(COLOR_SORT_RED, 5.0, false, true);
+	ColorSort::Config def_col_sort_cfg(Properties::COLOR_SORT_RED, 5.0, false, true);
 	Intake::Config def_intake_cfg(Properties::INTAKE_TOP, 5.0, false, true);
+	Hood::Config def_hood_cfg(5.0, false, true);
+        Unloader::Config def_unloader_cfg(5.0, false, true);
+        Descore::Config def_descore_cfg(5.0, false, true);
 
 
 	void load_routine_files() {
@@ -21,7 +24,7 @@ namespace Autonomous {
 		for (std::string file_name; std::getline(files_iss, file_name); ) {
 			std::filesystem::path p(file_name);
 
-			if (p.extension() == ".txt") {
+			if (p.extension() == ".rtn") {
 				parse_routine_file(p);
 			}
 		}
@@ -34,7 +37,7 @@ namespace Autonomous {
 
 	Routine text files will generally be formatted as such:
 
-	```txt
+	```.rtn
 	ALIGN : KBA 2,4,6 ANG 90 EPS 0.0001 TIME 10
 	TRAVEL : KBA 3,5,7 DIST 10 EPS 0.01 TIME 5
 	This is a comment.
@@ -118,6 +121,36 @@ namespace Autonomous {
 					)
 				);
 
+			} else if (def == "HOOD") {
+				act = std::make_shared<Hood>(
+					parse_parameter_tokens<Hood, Hood::Config>(
+						def_hood_cfg,
+						param_tokens,
+						Hood::parse,
+						Hood::parse_cleanup
+					)
+				);
+
+			} else if (def == "UNLOADER") {
+				act = std::make_shared<Unloader>(
+					parse_parameter_tokens<Unloader, Unloader::Config>(
+						def_unloader_cfg,
+						param_tokens,
+						Unloader::parse,
+						Unloader::parse_cleanup
+					)
+				);
+
+			} else if (def == "DESCORE") {
+				act = std::make_shared<Descore>(
+					parse_parameter_tokens<Descore, Descore::Config>(
+						def_descore_cfg,
+						param_tokens,
+						Descore::parse,
+						Descore::parse_cleanup
+					)
+				);
+
 			} else { continue; }
 
 			rt.second.push(act);
@@ -166,7 +199,7 @@ namespace Autonomous {
 	}
 
 
-	void Align::parse(Align::Config& cfg, ParameterToken t, ValueToken v) {
+	void Align::parse(Config& cfg, ParameterToken t, ValueToken v) {
 		if (t == "KBA") {
 			cfg.kba = KBA::parse(v);
 
@@ -185,7 +218,7 @@ namespace Autonomous {
 	}
 
 
-	void Travel::parse(Travel::Config& cfg, ParameterToken t, ValueToken v) {
+	void Travel::parse(Config& cfg, ParameterToken t, ValueToken v) {
 		if (t == "KBA") {
 			cfg.kba = KBA::parse(v);
 
@@ -204,12 +237,12 @@ namespace Autonomous {
 	}
 
 
-	void ColorSort::parse(ColorSort::Config& cfg, ParameterToken t, ValueToken v) {
+	void ColorSort::parse(Config& cfg, ParameterToken t, ValueToken v) {
 		if (t == "COL") {
 			if (v == "red") {
-				cfg.color = COLOR_SORT_RED;
+				cfg.color = Properties::COLOR_SORT_RED;
 			} else if (v == "blue") {
-				cfg.color = COLOR_SORT_BLUE;
+				cfg.color = Properties::COLOR_SORT_BLUE;
 			}
 
 		} else if (t == "TOG") {
@@ -224,7 +257,7 @@ namespace Autonomous {
 	}
 
 
-	void Intake::parse(Intake::Config& cfg, ParameterToken t, ValueToken v) {
+	void Intake::parse(Config& cfg, ParameterToken t, ValueToken v) {
 		if (t == "MODE") {
 			if (v == "top") {
 				cfg.intake_mode = Properties::INTAKE_TOP;
@@ -246,18 +279,72 @@ namespace Autonomous {
 	}
 
 
-	void Align::parse_cleanup(Align::Config& cfg) {}
+	void Hood::parse(Config& cfg, ParameterToken t, ValueToken v) {
+		if (t == "TOG") {
+			cfg.toggling = std::stoi(v);
+
+		} else if (t == "TIME") {
+			cfg.timeout = std::stof(v);
+
+		} else if (t == "BLK") {
+			cfg.blocking = std::stoi(v);
+		}
+	}
 
 
-	void Travel::parse_cleanup(Travel::Config& cfg) {}
+	void Unloader::parse(Config& cfg, ParameterToken t, ValueToken v) {
+		if (t == "TOG") {
+			cfg.toggling = std::stoi(v);
+
+		} else if (t == "TIME") {
+			cfg.timeout = std::stof(v);
+
+		} else if (t == "BLK") {
+			cfg.blocking = std::stoi(v);
+		}
+	}
 
 
-	void ColorSort::parse_cleanup(ColorSort::Config& cfg) {
+	void Descore::parse(Config& cfg, ParameterToken t, ValueToken v) {
+		if (t == "TOG") {
+			cfg.toggling = std::stoi(v);
+
+		} else if (t == "TIME") {
+			cfg.timeout = std::stof(v);
+
+		} else if (t == "BLK") {
+			cfg.blocking = std::stoi(v);
+		}
+	}
+
+
+	void Align::parse_cleanup(Config& cfg) {}
+
+
+	void Travel::parse_cleanup(Config& cfg) {}
+
+
+	void ColorSort::parse_cleanup(Config& cfg) {
 		cfg.blocking = !cfg.toggling && cfg.blocking;
 	}
 
 
-	void Intake::parse_cleanup(Intake::Config& cfg) {
+	void Intake::parse_cleanup(Config& cfg) {
+		cfg.blocking = !cfg.toggling && cfg.blocking;
+	}
+
+
+	void Hood::parse_cleanup(Config& cfg) {
+		cfg.blocking = !cfg.toggling && cfg.blocking;
+	}
+
+
+	void Unloader::parse_cleanup(Config& cfg) {
+		cfg.blocking = !cfg.toggling && cfg.blocking;
+	}
+
+
+	void Descore::parse_cleanup(Config& cfg) {
 		cfg.blocking = !cfg.toggling && cfg.blocking;
 	}
 }

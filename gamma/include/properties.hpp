@@ -12,6 +12,11 @@ namespace Properties {
 		INTAKE_BOTTOM
 	};
 
+	enum ColorSortColor {
+		COLOR_SORT_RED,
+		COLOR_SORT_BLUE
+	};
+
 	inline constexpr int TICK_DELAY_MSEC = 10;
 	inline constexpr int SCREEN_REFRESH_DELAY_MSEC = 400;
 	inline constexpr int MAX_MOTOR_VOLTS = 127;
