@@ -112,6 +112,7 @@ namespace Autonomous {
 		};
 
 		bool closing = false;
+                bool flap_open = false;
 		float last_open_ang = 0;
 
                 static inline bool toggle_state = false;

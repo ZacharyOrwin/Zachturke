@@ -10,7 +10,7 @@ namespace Autonomous {
 
 	Align::Config def_align_cfg(KBA(), 0.0, 0.0, 5.0, true);
 	Travel::Config def_travel_cfg(KBA(), 0.0, 0.0, 5.0, true);
-	ColorSort::Config def_col_sort_cfg(Properties::COLOR_SORT_RED, 5.0, false, true);
+	ColorSort::Config def_col_sort_cfg(Properties::COLOR_SORT_RED, 0.0, 5.0, false, true);
 	Intake::Config def_intake_cfg(Properties::INTAKE_TOP, 5.0, false, true);
 	Hood::Config def_hood_cfg(5.0, false, true);
         Unloader::Config def_unloader_cfg(5.0, false, true);
@@ -289,6 +289,9 @@ namespace Autonomous {
 			} else if (v == "blue") {
 				cfg.color = Properties::COLOR_SORT_BLUE;
 			}
+		
+		} else if (t == "CROT") {
+			cfg.closing_rotations = std::stof(v);
 
 		} else if (t == "TOG") {
 			cfg.toggling = std::stoi(v);

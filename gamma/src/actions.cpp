@@ -121,9 +121,8 @@ namespace Autonomous {
 		// Exit Condition.
 		std::function<void()> exit_f = [&flap]() -> void {
 			flap.set_value(false);
-			toggle_state = false;
 		};
-		if (Toggleable::process_toggle(toggle_state, time, exit_f) == ACTION_RUN_COMPLETE) {
+		if (cfg->process_toggle(toggle_state, time, exit_f) == ACTION_RUN_COMPLETE) {
 			return ACTION_RUN_COMPLETE;
 		}
 
@@ -135,18 +134,20 @@ namespace Autonomous {
 		if (is_blue && cfg->color == Properties::COLOR_SORT_BLUE
 			|| is_red && cfg->color == Properties::COLOR_SORT_RED
 		) {
-			flap.set_value(true);
+			flap_open = true;
+			flap.set_value(flap_open);
 			closing = false;
 
 		} else if (closing) {
 			float delta = BotConnections::intake_A.get_position() - last_open_ang;
 
 			if (delta > cfg->closing_rotations) {
-				flap.set_value(false);
+				flap_open = false;
+				flap.set_value(flap_open);
 				closing = false;
 			}
 
-		} else if (flap.get_value()){
+		} else if (flap_open){
 			closing = true;
 			last_open_ang = BotConnections::intake_A.get_position();
 		}
@@ -168,14 +169,12 @@ namespace Autonomous {
 		Properties::intake_mode = cfg->intake_mode;
 
 		// Exit Condition.
-		if (
-			cfg->toggling && Toggleable::process_toggle(toggle_state) == ACTION_RUN_COMPLETE
-			|| !cfg->toggling && (time > cfg->timeout || !toggle_state)
-		) {
+		std::function<void()> exit_f = [&intake_A, &intake_B, &intake_C]() -> void {
 			intake_A.brake();
 			intake_B.brake();
 			intake_C.brake();
-			toggle_state = false;
+		};
+		if (cfg->process_toggle(toggle_state, time, exit_f) == ACTION_RUN_COMPLETE) {
 			return ACTION_RUN_COMPLETE;
 		}
 
@@ -218,12 +217,10 @@ namespace Autonomous {
 		pros::adi::DigitalOut& hood = BotConnections::hood;
 
 		// Exit Condition.
-		if (
-			cfg->toggling && Toggleable::process_toggle(toggle_state) == ACTION_RUN_COMPLETE
-			|| !cfg->toggling && (time > cfg->timeout || !toggle_state)
-		) {
+		std::function<void()> exit_f = [&hood]() -> void {
 			hood.set_value(false);
-			toggle_state = false;
+		};
+		if (cfg->process_toggle(toggle_state, time, exit_f) == ACTION_RUN_COMPLETE) {
 			return ACTION_RUN_COMPLETE;
 		}
 
@@ -242,12 +239,10 @@ namespace Autonomous {
 		pros::adi::DigitalOut& unloader = BotConnections::unloader;
 
 		// Exit Condition.
-		if (
-			cfg->toggling && Toggleable::process_toggle(toggle_state) == ACTION_RUN_COMPLETE
-			|| !cfg->toggling && (time > cfg->timeout || !toggle_state)
-		) {
+		std::function<void()> exit_f = [&unloader]() -> void {
 			unloader.set_value(false);
-			toggle_state = false;
+		};
+		if (cfg->process_toggle(toggle_state, time, exit_f) == ACTION_RUN_COMPLETE) {
 			return ACTION_RUN_COMPLETE;
 		}
 
@@ -266,12 +261,10 @@ namespace Autonomous {
 		pros::adi::DigitalOut& descore = BotConnections::descore;
 
 		// Exit Condition.
-		if (
-			cfg->toggling && Toggleable::process_toggle(toggle_state) == ACTION_RUN_COMPLETE
-			|| !cfg->toggling && (time > cfg->timeout || !toggle_state)
-		) {
+		std::function<void()> exit_f = [&descore]() -> void {
 			descore.set_value(false);
-			toggle_state = false;
+		};
+		if (cfg->process_toggle(toggle_state, time, exit_f) == ACTION_RUN_COMPLETE) {
 			return ACTION_RUN_COMPLETE;
 		}
 
