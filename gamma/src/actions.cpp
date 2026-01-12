@@ -304,13 +304,37 @@ namespace Autonomous {
 	}
 
 
-	void Hood::start() {}
+	void Hood::start() {
+		Config* cfg = static_cast<Config*>(c.get());
+
+		if (cfg->toggling) {
+			toggle_state = !toggle_state;
+		} else {
+			toggle_state = true;
+		}
+	}
 
 
-	void Unloader::start() {}
+	void Unloader::start() {
+		Config* cfg = static_cast<Config*>(c.get());
+
+		if (cfg->toggling) {
+			toggle_state = !toggle_state;
+		} else {
+			toggle_state = true;
+		}
+	}
 
 
-	void Descore::start() {}
+	void Descore::start() {
+		Config* cfg = static_cast<Config*>(c.get());
+
+		if (cfg->toggling) {
+			toggle_state = !toggle_state;
+		} else {
+			toggle_state = true;
+		}
+	}
 
 
 	std::string get_action_type(std::shared_ptr<Action>& action) {
