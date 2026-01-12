@@ -39,7 +39,11 @@ namespace OnboardGUI {
 			lv_obj_add_event_cb(btn, on_routine_btn_cb, LV_EVENT_CLICKED, nullptr);
 		}
 
-		select_routine(lv_list_get_button_text(routines_lv_list, lv_obj_get_child(routines_lv_list, 0)));
+		if (Autonomous::active_routine == nullptr) {
+			select_routine(lv_list_get_button_text(routines_lv_list, lv_obj_get_child(routines_lv_list, 0)));
+		} else {
+			lv_label_set_text(selected_routine_lv_label, Autonomous::active_routine->first.c_str());
+		}
 	}
 
 
@@ -76,5 +80,6 @@ namespace OnboardGUI {
 	void select_routine(std::string routine_name) {
 		lv_label_set_text(selected_routine_lv_label, routine_name.c_str());
 		Autonomous::select_routine(routine_name);
+		Autonomous::write_cache_file(routine_name);
 	}
 }

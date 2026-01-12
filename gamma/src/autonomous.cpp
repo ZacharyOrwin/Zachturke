@@ -39,6 +39,7 @@ namespace Autonomous {
 	ActionsBlockingStatus run_action_ticks() {
 		bool blocking = false;
 
+                printf("A\n");
 		for (auto it = actions_running.begin(); it != actions_running.end(); ) {
 			auto& action = *it;
 

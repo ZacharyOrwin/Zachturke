@@ -6,6 +6,7 @@
 namespace Autonomous {
 
 	std::string routines_directory = "/";
+	std::string cache_directory = "/cache.cfg";
 
 	Align::Config def_align_cfg(KBA(), 0.0, 0.0, 5.0, true);
 	Travel::Config def_travel_cfg(KBA(), 0.0, 0.0, 5.0, true);
@@ -157,6 +158,7 @@ namespace Autonomous {
 		}
 
 		routines.push_back(std::make_shared<Routine>(rt));
+		f.close();
 	}
 
 
@@ -180,6 +182,49 @@ namespace Autonomous {
 		parser_cleanup_function(cfg);
 
 		return cfg;
+	}
+
+
+	void load_cache_file() {
+		std::filesystem::path p(cache_directory);
+		std::ifstream f(p);
+
+		if (!f.is_open()) return;
+		
+		for (std::string line; std::getline(f, line); ) {
+			std::vector<std::string> tokens;
+			std::istringstream tokens_stream(line);
+
+			for (std::string token; std::getline(tokens_stream, token, ' '); ) {
+				tokens.push_back(token);
+			}
+
+			std::string def = tokens.at(0);
+			std::string val = tokens.at(1);
+
+			if (def == "ROUTINE") {
+				// NOT guaranteed to select a routine.
+				// If the previously selected routine is now deleted,
+				// then it cannot be selected. Will be nullptr.
+				std::replace(val.begin(), val.end(), '_', ' ');
+				select_routine(val);
+			}
+		}
+
+		f.close();
+	}
+
+
+	void write_cache_file(std::string routine_name) {
+		std::filesystem::path p(cache_directory);
+		std::ofstream f(p);
+
+		if (!f.is_open()) return;
+
+		std::replace(routine_name.begin(), routine_name.end(), ' ', '_');
+		f << "ROUTINE " + routine_name;
+
+		f.close();
 	}
 
 

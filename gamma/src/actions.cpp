@@ -19,9 +19,10 @@ namespace Autonomous {
 	ActionRunStatus Align::run_tick() {
 		// Input.
                 Config* cfg = static_cast<Config*>(c.get());
-		pros::Imu& imu = imu;
-		pros::MotorGroup& left_mg = left_mg;
-		pros::MotorGroup& right_mg = right_mg;
+		
+		pros::Imu& imu = BotConnections::imu;
+		pros::MotorGroup& left_mg = BotConnections::left_mg;
+		pros::MotorGroup& right_mg = BotConnections::right_mg;
 
 		float curr_ang = imu.get_heading();
         	float curr_rad = XMath::rad(curr_ang);
@@ -70,8 +71,8 @@ namespace Autonomous {
 		// Input.
                 Config* cfg = static_cast<Config*>(c.get());
 
-		pros::MotorGroup& left_mg = left_mg;
-		pros::MotorGroup& right_mg = right_mg;
+		pros::MotorGroup& left_mg = BotConnections::left_mg;
+		pros::MotorGroup& right_mg = BotConnections::right_mg;
 
 		float left_vel = left_mg.get_actual_velocity();
 		float right_vel = right_mg.get_actual_velocity();
@@ -107,7 +108,7 @@ namespace Autonomous {
 		// Input.
 		Config* cfg = static_cast<Config*>(c.get());
 
-		pros::adi::DigitalOut& flap = flap;
+		pros::adi::DigitalOut& flap = BotConnections::flap;
 
 		double hue = BotConnections::vis_sens.get_hue();
 
@@ -144,9 +145,9 @@ namespace Autonomous {
 		// Input.
 		Config* cfg = static_cast<Config*>(c.get());
 
-		pros::Motor& intake_A = intake_A;
-		pros::Motor& intake_B = intake_B;
-		pros::Motor& intake_C = intake_C;
+		pros::Motor& intake_A = BotConnections::intake_A;
+		pros::Motor& intake_B = BotConnections::intake_B;
+		pros::Motor& intake_C = BotConnections::intake_C;
 
 		Properties::intake_mode = cfg->intake_mode;
 

@@ -202,6 +202,8 @@ namespace Autonomous {
 	ActionsBlockingStatus run_action_ticks();
 
 	extern std::string routines_directory;
+        extern std::string cache_directory;
+
 	extern Align::Config def_align_cfg;
 	extern Travel::Config def_travel_cfg;
 	extern ColorSort::Config def_col_sort_cfg;
@@ -219,4 +221,6 @@ namespace Autonomous {
 		std::function<void(G&, ParameterToken, ValueToken)> parser_function,
                 std::function<void(G&)> parser_cleanup_function
 	);
+        void load_cache_file();
+        void write_cache_file(std::string routine_name);
 }
