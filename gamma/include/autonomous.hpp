@@ -48,7 +48,7 @@ namespace Autonomous {
                 Toggleable(bool tog, float t) : toggling(tog), timeout(t) {}
                 virtual ~Toggleable() = default;
 
-                static ActionRunStatus process_toggle(bool global_toggle_state);
+                ActionRunStatus process_toggle(bool& global_toggle_state, float time, std::function<void()> exit_func);
         };
 
 	struct BConfig {
@@ -105,10 +105,14 @@ namespace Autonomous {
 	struct ColorSort : Action {
 		struct Config : BConfig, Toggleable {
 			Properties::ColorSortColor color = Properties::COLOR_SORT_RED;
+			float closing_rotations = 0;
 
-			Config(Properties::ColorSortColor c, float t, bool tog, bool b) :
-				BConfig(b), color(c), Toggleable(tog, t) {}
+			Config(Properties::ColorSortColor c, float cr, float t, bool tog, bool b) :
+				BConfig(b), color(c), closing_rotations(cr), Toggleable(tog, t) {}
 		};
+
+		bool closing = false;
+		float last_open_ang = 0;
 
                 static inline bool toggle_state = false;
 

@@ -7,9 +7,15 @@
 
 namespace Autonomous {
 
-	ActionRunStatus Toggleable::process_toggle(bool global_toggle_state) {
-		if (!global_toggle_state) {
+	ActionRunStatus Toggleable::process_toggle(bool& toggle_state, float time, std::function<void()> exit_func) {
+		if (
+			toggling && !toggle_state
+			|| !toggling && (time > timeout || !toggle_state)
+		) {
+			exit_func();
+			toggle_state = false;
 			return ACTION_RUN_COMPLETE;
+
 		} else {
 			return ACTION_RUN_ONGOING;
 		}
@@ -113,12 +119,11 @@ namespace Autonomous {
 		double hue = BotConnections::vis_sens.get_hue();
 
 		// Exit Condition.
-		if (
-			cfg->toggling && Toggleable::process_toggle(toggle_state) == ACTION_RUN_COMPLETE
-			|| !cfg->toggling && (time > cfg->timeout || !toggle_state)
-		) {
+		std::function<void()> exit_f = [&flap]() -> void {
 			flap.set_value(false);
 			toggle_state = false;
+		};
+		if (Toggleable::process_toggle(toggle_state, time, exit_f) == ACTION_RUN_COMPLETE) {
 			return ACTION_RUN_COMPLETE;
 		}
 
@@ -126,13 +131,24 @@ namespace Autonomous {
 		bool is_red = (hue >= 350 || hue <= 10);
 		bool is_blue = (hue >= 200 && hue <= 220);
 
-		// Backdoor DEFINITE WIP
-		if (is_red && cfg->color == Properties::COLOR_SORT_BLUE
-			|| is_blue && cfg->color == Properties::COLOR_SORT_RED
+		// If the color to sort out is detected at the sensor.
+		if (is_blue && cfg->color == Properties::COLOR_SORT_BLUE
+			|| is_red && cfg->color == Properties::COLOR_SORT_RED
 		) {
 			flap.set_value(true);
-		} else {
-			flap.set_value(false);
+			closing = false;
+
+		} else if (closing) {
+			float delta = BotConnections::intake_A.get_position() - last_open_ang;
+
+			if (delta > cfg->closing_rotations) {
+				flap.set_value(false);
+				closing = false;
+			}
+
+		} else if (flap.get_value()){
+			closing = true;
+			last_open_ang = BotConnections::intake_A.get_position();
 		}
 
 		time += Properties::TICK_DELAY_MSEC/1000.0;

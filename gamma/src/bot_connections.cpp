@@ -35,6 +35,8 @@ namespace BotConnections {
 		// left_mg.set_gearing_all(pros::E_MOTOR_GEAR_BLUE);
 		// right_mg.set_gearing_all(pros::E_MOTOR_GEAR_BLUE);
 
+		intake_A.set_encoder_units(pros::E_MOTOR_ENCODER_ROTATIONS);
+
 		intake_A.set_gearing(pros::E_MOTOR_GEAR_GREEN);
 		intake_B.set_gearing(pros::E_MOTOR_GEAR_BLUE);
 		intake_C.set_gearing(pros::E_MOTOR_GEAR_BLUE);
