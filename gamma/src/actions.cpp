@@ -276,6 +276,37 @@ namespace Autonomous {
 	}
 
 
+	ActionRunStatus Park::run_tick() {
+		// Input.
+		Config* cfg = static_cast<Config*>(c.get());
+
+		pros::Motor& intake_A = BotConnections::intake_A;
+		pros::Motor& intake_B = BotConnections::intake_B;
+		pros::Distance& dist_sens = BotConnections::dist_sens;
+		pros::adi::DigitalOut& park_mech = BotConnections::park_mech;
+
+		// Exit Condition.
+		std::function<void()> exit_f = [&park_mech]() -> void {
+			park_mech.set_value(false);
+		};
+		if (cfg->process_toggle(toggle_state, time, exit_f) == ACTION_RUN_COMPLETE) {
+			return ACTION_RUN_COMPLETE;
+		}
+
+		if (dist_sens.get() < cfg->trigger_dist) {
+			park_mech.set_value(true);
+		} else {
+			park_mech.set_value(false);
+			intake_A.move(-cfg->speed);
+			intake_B.move(-cfg->speed);
+		}
+
+		time += Properties::TICK_DELAY_MSEC/1000.0;
+
+		return ACTION_RUN_ONGOING;
+	}
+
+
 	void Align::start() {}
 
 
@@ -327,6 +358,17 @@ namespace Autonomous {
 
 
 	void Descore::start() {
+		Config* cfg = static_cast<Config*>(c.get());
+
+		if (cfg->toggling) {
+			toggle_state = !toggle_state;
+		} else {
+			toggle_state = true;
+		}
+	}
+
+
+	void Park::start() {
 		Config* cfg = static_cast<Config*>(c.get());
 
 		if (cfg->toggling) {

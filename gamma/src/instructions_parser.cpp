@@ -15,6 +15,7 @@ namespace Autonomous {
 	Hood::Config def_hood_cfg(5.0, false, true);
         Unloader::Config def_unloader_cfg(5.0, false, true);
         Descore::Config def_descore_cfg(5.0, false, true);
+	Park::Config def_park_cfg(0, 0.0, 5.0, false, true);
 
 
 	void load_routine_files() {
@@ -149,6 +150,16 @@ namespace Autonomous {
 						param_tokens,
 						Descore::parse,
 						Descore::parse_cleanup
+					)
+				);
+
+			} else if (def == "PARK") {
+				act = std::make_shared<Park>(
+					parse_parameter_tokens<Park, Park::Config>(
+						def_park_cfg,
+						param_tokens,
+						Park::parse,
+						Park::parse_cleanup
 					)
 				);
 
@@ -366,6 +377,25 @@ namespace Autonomous {
 	}
 
 
+	void Park::parse(Config& cfg, ParameterToken t, ValueToken v) {
+		if (t == "SPD") {
+			cfg.speed = std::stoi(v);
+
+		} else if (t == "TDIS") {
+			cfg.trigger_dist = std::stof(v);
+
+		} else if (t == "TOG") {
+			cfg.toggling = std::stoi(v);
+
+		} else if (t == "TIME") {
+			cfg.timeout = std::stof(v);
+
+		} else if (t == "BLK") {
+			cfg.blocking = std::stoi(v);
+		}
+	}
+
+
 	void Align::parse_cleanup(Config& cfg) {}
 
 
@@ -393,6 +423,11 @@ namespace Autonomous {
 
 
 	void Descore::parse_cleanup(Config& cfg) {
+		cfg.blocking = !cfg.toggling && cfg.blocking;
+	}
+
+
+	void Park::parse_cleanup(Config& cfg) {
 		cfg.blocking = !cfg.toggling && cfg.blocking;
 	}
 }

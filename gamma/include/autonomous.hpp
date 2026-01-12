@@ -73,7 +73,7 @@ namespace Autonomous {
 			float angle = 0.0;
 
 			Config(KBA k, float a, float e, float t, bool b) :
-				BConfig(b), angle(a), KBAIterable(k, e, t) {}
+				angle(a), BConfig(b), KBAIterable(k, e, t) {}
 		};
 
 		Align(Config c) : Action(std::make_shared<Config>(c)) {}
@@ -89,7 +89,7 @@ namespace Autonomous {
 			float dist = 0.0;
 
 			Config(KBA k, float d, float e, float t, bool b) :
-				BConfig(b), dist(d), KBAIterable(k, e, t) {}
+				dist(d), BConfig(b), KBAIterable(k, e, t) {}
 		};
 
                 float accum_dist = 0.0;
@@ -108,7 +108,7 @@ namespace Autonomous {
 			float closing_rotations = 0;
 
 			Config(Properties::ColorSortColor c, float cr, float t, bool tog, bool b) :
-				BConfig(b), color(c), closing_rotations(cr), Toggleable(tog, t) {}
+				color(c), closing_rotations(cr), BConfig(b), Toggleable(tog, t) {}
 		};
 
 		bool closing = false;
@@ -127,10 +127,10 @@ namespace Autonomous {
 
 	struct Intake : Action {
 		struct Config : BConfig, Toggleable {
-			Properties::IntakeMode intake_mode;
+			Properties::IntakeMode intake_mode = Properties::INTAKE_TOP;
 
 			Config(Properties::IntakeMode i_m, float t, bool tog, bool b) :
-				BConfig(b), intake_mode(i_m), Toggleable(tog, t) {}
+				intake_mode(i_m), BConfig(b), Toggleable(tog, t) {}
 		};
 
                 static inline bool toggle_state = false;
@@ -191,6 +191,25 @@ namespace Autonomous {
                 static void parse_cleanup(Config& cfg);
 	};
 
+        struct Park : Action {
+                struct Config : BConfig, Toggleable {
+                        int speed = 0;
+                        float trigger_dist = 0;
+
+                        Config(float s, float td, float t, bool tog, bool b) :
+				speed(s), trigger_dist(td), BConfig(b), Toggleable(tog, t) {}
+		};
+
+                static inline bool toggle_state = false;
+
+		Park(Config c) : Action(std::make_shared<Config>(c)) {}
+		ActionRunStatus run_tick() override;
+                void start() override;
+
+		static void parse(Config& cfg, ParameterToken t, ValueToken v);
+                static void parse_cleanup(Config& cfg);
+        };
+
         std::string get_action_type(std::shared_ptr<Action>& action);
 
 	typedef std::pair<std::string, std::queue<std::shared_ptr<Action>>> Routine;
@@ -216,6 +235,7 @@ namespace Autonomous {
         extern Hood::Config def_hood_cfg;
         extern Unloader::Config def_unloader_cfg;
         extern Descore::Config def_descore_cfg;
+        extern Park::Config def_park_cfg;
 
 	void load_routine_files();
 	void parse_routine_file(std::filesystem::path path);
