@@ -6,8 +6,8 @@ namespace BotConnections {
 	pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 	// Temporarily set like this for clawbot.
-	pros::MotorGroup left_mg({/*-7,*/3/*,-2*/});
-	pros::MotorGroup right_mg({/*8,*/-9/*,10*/});
+	pros::MotorGroup left_mg({-7,3,-2});
+	pros::MotorGroup right_mg({8,-9,10});
 
 	pros::Imu imu(4);
 	pros::Rotation odom(6);
@@ -32,8 +32,8 @@ namespace BotConnections {
 		left_mg.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);
 		right_mg.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);
 
-		// left_mg.set_gearing_all(pros::E_MOTOR_GEAR_BLUE);
-		// right_mg.set_gearing_all(pros::E_MOTOR_GEAR_BLUE);
+		left_mg.set_gearing_all(pros::E_MOTOR_GEAR_BLUE);
+		right_mg.set_gearing_all(pros::E_MOTOR_GEAR_BLUE);
 
 		intake_A.set_encoder_units(pros::E_MOTOR_ENCODER_ROTATIONS);
 
