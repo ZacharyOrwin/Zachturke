@@ -8,8 +8,8 @@ namespace Autonomous {
 	std::string routines_directory = "/";
 	std::string cache_directory = "/cache.cfg";
 
-	Align::Config def_align_cfg(KBA(), 0.0, 0.0, 5.0, true);
-	Travel::Config def_travel_cfg(KBA(), 0.0, 0.0, 5.0, true);
+	Align::Config def_align_cfg(KBAT(), 0.0, 0.0, 5.0, true);
+	Travel::Config def_travel_cfg(KBAT(), 0.0, 0.0, 5.0, true);
 	ColorSort::Config def_col_sort_cfg(Properties::COLOR_SORT_RED, 0.0, 5.0, false, true);
 	Intake::Config def_intake_cfg(Properties::INTAKE_TOP, 5.0, false, true);
 	Hood::Config def_hood_cfg(5.0, false, true);
@@ -40,10 +40,10 @@ namespace Autonomous {
 	Routine text files will generally be formatted as such:
 
 	```.rtn
-	ALIGN : KBA 2,4,6 ANG 90 EPS 0.0001 TIME 10
-	TRAVEL : KBA 3,5,7 DIST 10 EPS 0.01 TIME 5
+	ALIGN : KBAT 2,4,6 ANG 90 EPS 0.0001 TIME 10
+	TRAVEL : KBAT 3,5,7 DIST 10 EPS 0.01 TIME 5
 	This is a comment.
-	ALIGN : ANG 135 TIME 10 KBA 2,4,8 EPS 0.0001 BLK 1
+	ALIGN : ANG 135 TIME 10 KBAT 2,4,8 EPS 0.0001 BLK 1
 	TRAVEL : DIST 5
 	```
 
@@ -239,25 +239,26 @@ namespace Autonomous {
 	}
 
 
-	KBA KBA::parse(ValueToken v) {
-		std::vector<float> kba_args;
+	KBAT KBAT::parse(ValueToken v) {
+		std::vector<float> kbat_args;
 		std::istringstream v_stream(v);
 
 		for (std::string arg; std::getline(v_stream, arg, ','); ) {
-			kba_args.push_back(std::stof(arg));
+			kbat_args.push_back(std::stof(arg));
 		}
 
-		return KBA {
-			.k = kba_args.at(0),
-			.b = kba_args.at(1),
-			.a = kba_args.at(2)
+		return KBAT {
+			.k = kbat_args.at(0),
+			.b = kbat_args.at(1),
+			.a = kbat_args.at(2),
+			.t = kbat_args.at(3)
 		};
 	}
 
 
 	void Align::parse(Config& cfg, ParameterToken t, ValueToken v) {
-		if (t == "KBA") {
-			cfg.kba = KBA::parse(v);
+		if (t == "KBAT") {
+			cfg.kbat = KBAT::parse(v);
 
 		} else if (t == "ANG") {
 			cfg.angle = std::stof(v);
@@ -275,8 +276,8 @@ namespace Autonomous {
 
 
 	void Travel::parse(Config& cfg, ParameterToken t, ValueToken v) {
-		if (t == "KBA") {
-			cfg.kba = KBA::parse(v);
+		if (t == "KBAT") {
+			cfg.kbat = KBAT::parse(v);
 
 		} else if (t == "DIST") {
 			cfg.dist = std::stof(v);
