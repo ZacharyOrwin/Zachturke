@@ -25,6 +25,9 @@ namespace Controls {
 
 	void processIntake() {
 		pros::Controller& controller = BotConnections::controller;
+		pros::Motor& intake_A = BotConnections::intake_A;
+		pros::Motor& intake_B = BotConnections::intake_B;
+		pros::Motor& intake_C = BotConnections::intake_C;
 
 		bool R1_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1);
 		bool L1_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1);
@@ -43,6 +46,31 @@ namespace Controls {
 		} else {
 			Properties::intake_mode = Properties::INTAKE_OFF;
 			Autonomous::Intake::toggle_state = false;
+		}
+
+		switch (Properties::intake_mode) {
+			case Properties::INTAKE_REVERSE:
+				intake_A.move(-Properties::MAX_MOTOR_VOLTS);
+				intake_B.move(-Properties::MAX_MOTOR_VOLTS);
+				break;
+
+			case Properties::INTAKE_TOP:
+				intake_A.move(Properties::MAX_MOTOR_VOLTS);
+				intake_B.move(Properties::MAX_MOTOR_VOLTS);
+				intake_C.move(Properties::MAX_MOTOR_VOLTS);
+				break;
+	
+			case Properties::INTAKE_BOTTOM:
+				intake_A.move(Properties::MAX_MOTOR_VOLTS);
+				intake_B.move(Properties::MAX_MOTOR_VOLTS);
+				intake_C.move(-Properties::MAX_MOTOR_VOLTS);
+				break;
+	
+			case Properties::INTAKE_OFF:
+				intake_A.brake();
+				intake_B.brake();
+				intake_C.brake();
+				break;
 		}
 	}
 
