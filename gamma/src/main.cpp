@@ -47,22 +47,14 @@ void competition_initialize() {
  */
 void autonomous() {
 	using namespace Autonomous;
-	printf("B\n");
 
 	// AUTONOMOUS START.
 	initialize_actions_queue();
-	// OnboardGUI::initialize_running();
 
 	while (true) {
 		if (run_action_ticks() == ACTIONS_UNBLOCKED) {
 			start_next_action();
 		}
-
-		// int curr_refresh_cycles = Properties::global_time_msec / Properties::SCREEN_REFRESH_DELAY_MSEC;
-		// if (curr_refresh_cycles > Properties::screen_refresh_cycles) {
-		// 	OnboardGUI::running_actions_view_run_tick();
-		// 	Properties::screen_refresh_cycles = curr_refresh_cycles;
-		// }
 
 		run_odom_tick();
 
