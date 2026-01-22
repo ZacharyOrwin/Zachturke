@@ -35,16 +35,16 @@ namespace Autonomous {
         	float target_rad = XMath::rad(cfg->angle);
 
 		Vector2 curr_face_vec = Vector2 {
-                	std::cos(curr_rad),
-			std::sin(curr_rad)
+                	-std::sin(curr_rad),
+			std::cos(curr_rad)
 		};
 		Vector2 curr_right_vec = Vector2 {
-			std::sin(curr_rad),
-			-std::cos(curr_rad)
+			std::cos(curr_rad),
+			std::sin(curr_rad)
 		};
 		Vector2 target_face_vec = Vector2 {
-			std::cos(target_rad),
-			std::sin(target_rad),
+			-std::sin(target_rad),
+			std::cos(target_rad)
 		};
 
 		float curr_face_dot_target_face = curr_face_vec.dot(target_face_vec);
@@ -80,12 +80,8 @@ namespace Autonomous {
 		pros::MotorGroup& left_mg = BotConnections::left_mg;
 		pros::MotorGroup& right_mg = BotConnections::right_mg;
 
-		float left_vel = left_mg.get_actual_velocity();
-		float right_vel = right_mg.get_actual_velocity();
-		float avg_vel = Properties::FINAL_DRIVE_RATIO
-			* XMath::rpmToRads((left_vel + right_vel) / 2);
-
-		float diff = cfg->dist - accum_dist;
+		float curr_cdeg = BotConnections::odom.get_position();
+		float diff = XMath::rad((curr_cdeg - start_odom_cdeg) / 100.0) * (Properties::ODOM_DIAMETER_IN/2);
 
 		// Exit Condition.
 		if (time > cfg->timeout || std::abs(diff) < cfg->epsilon) {
@@ -99,10 +95,57 @@ namespace Autonomous {
 
 		left_mg.move(push);
 		right_mg.move(push);
+		
+		time += Properties::TICK_DELAY_MSEC/1000.0;
 
-		accum_dist += Properties::WHEEL_DIAMETER_IN/2
-			* avg_vel
-			* Properties::TICK_DELAY_MSEC/1000.0;
+		return ACTION_RUN_ONGOING;
+	}
+
+
+	ActionRunStatus Pursue::run_tick() {
+		// Input.
+                Config* cfg = static_cast<Config*>(c.get());
+
+		pros::Imu& imu = BotConnections::imu;
+		pros::MotorGroup& left_mg = BotConnections::left_mg;
+		pros::MotorGroup& right_mg = BotConnections::right_mg;
+
+		Vector2 diff_vec = cfg->position - Properties::odom_position;
+		float diff = diff_vec.length();
+
+		float curr_ang = imu.get_heading();
+        	float curr_rad = XMath::rad(curr_ang);
+
+		Vector2 curr_face_vec = Vector2 {
+                	-std::sin(curr_rad),
+			std::cos(curr_rad)
+		};
+		Vector2 curr_right_vec = Vector2 {
+			std::cos(curr_rad),
+			std::sin(curr_rad)
+		};
+		Vector2 target_face_vec = diff_vec.normalized();
+
+		float curr_face_dot_target_face = curr_face_vec.dot(target_face_vec);
+		float curr_right_dot_target_face = curr_right_vec.dot(target_face_vec);
+		// Range [0, 1] : 0 is target_face and curr_face aligned, 1 is them facing
+		// opposite directions.
+		float offset = (1 - curr_face_dot_target_face) / 2.0;
+
+		// Exit Condition.
+		if (time > cfg->timeout || diff < cfg->epsilon) {
+			left_mg.brake();
+			right_mg.brake();
+			return ACTION_RUN_COMPLETE;
+		}
+
+		// Output.
+		int sign = XMath::sgn<float>(curr_right_dot_target_face);
+		float twist = sign * cfg->align_kbat.output(offset, time);
+		float push = XMath::sgn<float>(diff) * cfg->travel_kbat.output(diff, time);
+
+		left_mg.move(push - twist);
+		right_mg.move(push + twist);
 		
 		time += Properties::TICK_DELAY_MSEC/1000.0;
 
@@ -310,7 +353,12 @@ namespace Autonomous {
 	void Align::start() {}
 
 
-	void Travel::start() {}
+	void Travel::start() {
+		start_odom_cdeg = Properties::odom_cdeg;
+	}
+
+
+	void Pursue::start() {}
 
 
 	void ColorSort::start() {

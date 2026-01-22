@@ -10,6 +10,7 @@ namespace Autonomous {
 
 	Align::Config def_align_cfg(KBAT(), 0.0, 0.0, 5.0, true);
 	Travel::Config def_travel_cfg(KBAT(), 0.0, 0.0, 5.0, true);
+	Pursue::Config def_pursue_cfg(KBAT(), KBAT(), Vector2{}, 0.0, 5.0, true);
 	ColorSort::Config def_col_sort_cfg(Properties::COLOR_SORT_RED, 0.0, 5.0, false, true);
 	Intake::Config def_intake_cfg(Properties::INTAKE_TOP, 5.0, false, true);
 	Hood::Config def_hood_cfg(5.0, false, true);
@@ -103,6 +104,17 @@ namespace Autonomous {
 					)
 				);
 
+			} else if (def == "PURSUE") {
+				act = std::make_shared<Pursue>(
+					parse_parameter_tokens<Pursue, Pursue::Config>(
+						def_pursue_cfg,
+						param_tokens,
+						Pursue::parse,
+						Pursue::parse_cleanup
+					)
+				);
+			
+			
 			} else if (def == "COLSORT") {
 				act = std::make_shared<ColorSort>(
 					parse_parameter_tokens<ColorSort, ColorSort::Config>(
@@ -256,6 +268,21 @@ namespace Autonomous {
 	}
 
 
+	Vector2 vector2_parse(ValueToken v) {
+		std::vector<float> vec_args;
+		std::istringstream v_stream(v);
+
+		for (std::string arg; std::getline(v_stream, arg, ','); ) {
+			vec_args.push_back(std::stof(arg));
+		}
+
+		return Vector2 {
+			vec_args.at(0),
+			vec_args.at(1)
+		};
+	}
+
+
 	void Align::parse(Config& cfg, ParameterToken t, ValueToken v) {
 		if (t == "KBAT") {
 			cfg.kbat = KBAT::parse(v);
@@ -281,6 +308,28 @@ namespace Autonomous {
 
 		} else if (t == "DIST") {
 			cfg.dist = std::stof(v);
+
+		} else if (t == "EPS") {
+			cfg.epsilon = std::stof(v);
+
+		} else if (t == "TIME") {
+			cfg.timeout = std::stof(v);
+
+		} else if (t == "BLK") {
+			cfg.blocking = std::stoi(v);
+		}
+	}
+
+
+	void Pursue::parse(Config& cfg, ParameterToken t, ValueToken v) {
+		if (t == "TKBAT") {
+			cfg.travel_kbat = KBAT::parse(v);
+
+		} else if (t == "AKBAT") {
+			cfg.align_kbat = KBAT::parse(v);
+
+		} else if (t == "POS") {
+			cfg.position = vector2_parse(v);
 
 		} else if (t == "EPS") {
 			cfg.epsilon = std::stof(v);
@@ -401,6 +450,9 @@ namespace Autonomous {
 
 
 	void Travel::parse_cleanup(Config& cfg) {}
+
+
+	void Pursue::parse_cleanup(Config& cfg) {}
 
 
 	void ColorSort::parse_cleanup(Config& cfg) {

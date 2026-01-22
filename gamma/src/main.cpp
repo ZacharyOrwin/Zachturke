@@ -64,6 +64,8 @@ void autonomous() {
 		// 	Properties::screen_refresh_cycles = curr_refresh_cycles;
 		// }
 
+		run_odom_tick();
+
 		pros::delay(Properties::TICK_DELAY_MSEC);
 		Properties::global_time_msec += Properties::TICK_DELAY_MSEC;
 	}
