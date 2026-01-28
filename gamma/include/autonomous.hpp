@@ -20,26 +20,25 @@ namespace Autonomous {
 
 	typedef std::string ParameterToken, ValueToken;
 
-	struct KBAT {
+	struct KBA {
 		float k = 0;
 		float b = 0;
 		float a = 0;
-		float t = 0;
 
-		float output(float x, float _t) {
-			return std::min(std::max(k*x*std::min(t*_t, 1.0f), a), b);
+		float output(float t) {
+			return std::min(std::max(t*k, a), b);
 		}
 
-		static KBAT parse(ValueToken v);
+		static KBA parse(ValueToken v);
 	};
 
-        struct KBATIterable {
-                KBAT kbat;
+        struct KBAIterable {
+                KBA kba;
                 float epsilon = 0.0;
                 float timeout = 0.0;
 
-                KBATIterable(KBAT k, float e, float t) : kbat(k), epsilon(e), timeout(t) {}
-                virtual ~KBATIterable() = default;
+                KBAIterable(KBA k, float e, float t) : kba(k), epsilon(e), timeout(t) {}
+                virtual ~KBAIterable() = default;
         };
 
         struct Toggleable {
@@ -70,11 +69,11 @@ namespace Autonomous {
 	};
 
 	struct Align : Action {
-		struct Config : BConfig, KBATIterable {
+		struct Config : BConfig, KBAIterable {
 			float angle = 0.0;
 
-			Config(KBAT k, float a, float e, float t, bool b) :
-				angle(a), BConfig(b), KBATIterable(k, e, t) {}
+			Config(KBA k, float a, float e, float t, bool b) :
+				angle(a), BConfig(b), KBAIterable(k, e, t) {}
 		};
 
 		Align(Config c) : Action(std::make_shared<Config>(c)) {}
@@ -86,11 +85,11 @@ namespace Autonomous {
 	};
 
 	struct Travel : Action {
-		struct Config : BConfig, KBATIterable {
+		struct Config : BConfig, KBAIterable {
 			float dist = 0.0;
 
-			Config(KBAT k, float d, float e, float t, bool b) :
-				dist(d), BConfig(b), KBATIterable(k, e, t) {}
+			Config(KBA k, float d, float e, float t, bool b) :
+				dist(d), BConfig(b), KBAIterable(k, e, t) {}
 		};
 
                 int start_odom_cdeg = 0;
