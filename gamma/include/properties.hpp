@@ -1,7 +1,6 @@
 #pragma once
 
 #include "api.h"
-#include "vector2.hpp"
 
 
 namespace Properties {
@@ -23,11 +22,8 @@ namespace Properties {
 	inline constexpr int MAX_MOTOR_VOLTS = 127;
 	inline constexpr float FINAL_DRIVE_RATIO = 3.0/4.0 /*2/3.0*/;
 	inline constexpr float WHEEL_DIAMETER_IN = 3.25;
-	inline constexpr float ODOM_DIAMETER_IN = 2.0;
 	inline int global_time_msec = 0;
 	inline int screen_refresh_cycles = 0;
-	inline int odom_cdeg = 0;
-	inline Vector2 odom_position {};
 	inline IntakeMode intake_mode = INTAKE_TOP;
 
 	inline float get_gear_ratio(pros::v5::MotorGears gear_set) {

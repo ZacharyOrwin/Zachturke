@@ -28,7 +28,6 @@ namespace BotConnections {
 
 	void initialize() {
 		imu.reset(true);
-		odom.reset();
 
 		left_mg.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);
 		right_mg.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);

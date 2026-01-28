@@ -93,29 +93,9 @@ namespace Autonomous {
 				dist(d), BConfig(b), KBATIterable(k, e, t) {}
 		};
 
-                int start_odom_cdeg = 0;
+                float accum_dist = 0.0;
 
 		Travel(Config c) : Action(std::make_shared<Config>(c)) {}
-		ActionRunStatus run_tick() override;
-                void start() override;
-
-		static void parse(Config& cfg, ParameterToken t, ValueToken v);
-                static void parse_cleanup(Config& cfg);
-	};
-
-	struct Pursue : Action {
-		struct Config : BConfig {
-			KBAT travel_kbat;
-			KBAT align_kbat;
-                	float epsilon = 0.0;
-                	float timeout = 0.0;
-			Vector2 position;
-
-			Config(KBAT tk, KBAT ak, Vector2 p, float e, float t, bool b) :
-				travel_kbat(tk), align_kbat(ak), position(p), epsilon(e), timeout(t), BConfig(b) {}
-		};
-
-		Pursue(Config c) : Action(std::make_shared<Config>(c)) {}
 		ActionRunStatus run_tick() override;
                 void start() override;
 
@@ -251,7 +231,6 @@ namespace Autonomous {
 
 	extern Align::Config def_align_cfg;
 	extern Travel::Config def_travel_cfg;
-	extern Pursue::Config def_pursue_cfg;
 	extern ColorSort::Config def_col_sort_cfg;
 	extern Intake::Config def_intake_cfg;
         extern Hood::Config def_hood_cfg;
@@ -270,7 +249,4 @@ namespace Autonomous {
 	);
         void load_cache_file();
         void write_cache_file(std::string routine_name);
-
-	Vector2 vector2_parse(ValueToken v);
-	void run_odom_tick();
 }
