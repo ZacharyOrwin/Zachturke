@@ -62,7 +62,7 @@ namespace Autonomous {
 
 		// Output.
 		int sign = XMath::sgn<float>(curr_right_dot_target_face);
-		float twist = sign * cfg->kba.output(offset);
+		float twist = sign * cfg->kbat.output(offset, time);
 
 		left_mg.move(-twist);
 		right_mg.move(twist);
@@ -91,7 +91,7 @@ namespace Autonomous {
 		}
 
 		// Output.
-		float push = XMath::sgn<float>(diff) * cfg->kba.output(std::abs(diff));
+		float push = XMath::sgn<float>(diff) * cfg->kbat.output(std::abs(diff), time);
 
 		left_mg.move(push);
 		right_mg.move(push);
