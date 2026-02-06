@@ -56,16 +56,6 @@ void autonomous() {
 			start_next_action();
 		}
 
-<<<<<<< HEAD
-		run_odom_tick();
-=======
-		// int curr_refresh_cycles = Properties::global_time_msec / Properties::SCREEN_REFRESH_DELAY_MSEC;
-		// if (curr_refresh_cycles > Properties::screen_refresh_cycles) {
-		// 	OnboardGUI::running_actions_view_run_tick();
-		// 	Properties::screen_refresh_cycles = curr_refresh_cycles;
-		// }
->>>>>>> parent of 80a4cc4 (Added odometry and Pursue action.)
-
 		pros::delay(Properties::TICK_DELAY_MSEC);
 		Properties::global_time_msec += Properties::TICK_DELAY_MSEC;
 	}

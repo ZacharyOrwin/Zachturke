@@ -18,8 +18,8 @@ namespace Controls {
 		int left_power  = Y + X;
 		int right_power = Y - X;
 
-		BotConnections::left_mg.move(left_power);
-		BotConnections::right_mg.move(right_power);
+		BotConnections::left_mg.move(left_power * Properties::LEFT_DRIVE_BIAS);
+		BotConnections::right_mg.move(right_power * Properties::RIGHT_DRIVE_BIAS);
 	}
 
 
@@ -57,7 +57,13 @@ namespace Controls {
 			case Properties::INTAKE_TOP:
 				intake_A.move(Properties::MAX_MOTOR_VOLTS);
 				intake_B.move(Properties::MAX_MOTOR_VOLTS);
-				intake_C.move(Properties::MAX_MOTOR_VOLTS);
+
+				if (intake_C.get_efficiency() > 5) {
+					intake_C.move(Properties::MAX_MOTOR_VOLTS);
+				} else {
+					intake_C.brake();
+				}
+
 				break;
 	
 			case Properties::INTAKE_BOTTOM:
@@ -105,7 +111,7 @@ namespace Controls {
 	void processPark() {
 		pros::Controller& controller = BotConnections::controller;
 
-		static bool park_state = false;
+		bool park_state = false;
 
 		bool down_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN);
 		bool up_on   = controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP);
@@ -117,8 +123,8 @@ namespace Controls {
 				BotConnections::intake_A.move(-40);
 				BotConnections::intake_B.move(-40);
 			} else if (!park_state) {
-				BotConnections::intake_A.move_relative(-36, 40); // ~0.1 turns
-				BotConnections::intake_B.move_relative(-36, 40);
+				BotConnections::intake_A.move_relative(-72, 40); // ~0.1 turns
+				BotConnections::intake_B.move_relative(-72, 40);
 
 				BotConnections::park_mech.set_value(true);
 				park_state = true;

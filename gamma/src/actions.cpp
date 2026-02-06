@@ -97,8 +97,8 @@ namespace Autonomous {
 		// Output.
 		float push = XMath::sgn<float>(diff) * cfg->kbat.output(std::abs(diff), time);
 
-		left_mg.move(push);
-		right_mg.move(push);
+		left_mg.move(push * Properties::LEFT_DRIVE_BIAS);
+		right_mg.move(push * Properties::RIGHT_DRIVE_BIAS);
 
 		accum_dist += Properties::WHEEL_DIAMETER_IN/2
 			* avg_vel

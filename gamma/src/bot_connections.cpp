@@ -41,6 +41,10 @@ namespace BotConnections {
 		intake_B.set_gearing(pros::E_MOTOR_GEAR_BLUE);
 		intake_C.set_gearing(pros::E_MOTOR_GEAR_BLUE);
 
+		intake_A.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+		intake_B.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+		intake_C.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+
 		vis_sens.set_led_pwm(100);
 	}
 }
