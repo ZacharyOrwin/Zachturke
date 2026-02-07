@@ -119,12 +119,12 @@ namespace Controls {
 		double dist_mm = BotConnections::dist_sens.get_distance();
 
 		if (down_on) {
-			if (dist_mm >= 35) {
-				BotConnections::intake_A.move(-40);
-				BotConnections::intake_B.move(-40);
+			if (dist_mm >= 32) {
+				BotConnections::intake_A.move(-77);
+				BotConnections::intake_B.move(-77);
 			} else if (!park_state) {
-				BotConnections::intake_A.move_relative(-72, 40); // ~0.1 turns
-				BotConnections::intake_B.move_relative(-72, 40);
+				BotConnections::intake_A.move_relative(-65, 40); // ~0.1 turns
+				BotConnections::intake_B.move_relative(-65, 40);
 
 				BotConnections::park_mech.set_value(true);
 				park_state = true;
