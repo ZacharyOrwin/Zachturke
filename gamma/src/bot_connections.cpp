@@ -5,25 +5,19 @@ namespace BotConnections {
 	
 	pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
-	// Temporarily set like this for clawbot.
-	pros::MotorGroup left_mg({-7,3,-2});
-	pros::MotorGroup right_mg({8,-9,10});
+	pros::MotorGroup left_mg({1});
+	pros::MotorGroup right_mg({4});
 
-	pros::Imu imu(4);
-	pros::Rotation odom(6);
+	pros::Imu imu(7);
+	pros::Rotation LRODOM(8);
+	pros::Rotation FBODOM(9);
 
-	pros::Motor intake_A(-13);
-	pros::Motor intake_B(11);
-	pros::Motor intake_C(12);
+	pros::Motor intake(-10);\
+	pros::MotorGroup LondonLift({11,-12});
 
-	pros::adi::DigitalOut park_mech('A');
-	pros::adi::DigitalOut hood('B');
-	pros::adi::DigitalOut flap('C');
-	pros::adi::DigitalOut descore('D');
-	pros::adi::DigitalOut unloader('E');
 
-	pros::Distance dist_sens(20);
-	pros::Optical vis_sens(1);
+	pros::adi::DigitalOut AaronArm('A');
+
 
 
 	void initialize() {
@@ -34,16 +28,15 @@ namespace BotConnections {
 
 		left_mg.set_gearing_all(pros::E_MOTOR_GEAR_BLUE);
 		right_mg.set_gearing_all(pros::E_MOTOR_GEAR_BLUE);
+		LondonLift.set_gearing_all(pros::E_MOTOR_GEAR_RED);//84:12
 
-		intake_A.set_encoder_units(pros::E_MOTOR_ENCODER_ROTATIONS);
+		intake.set_encoder_units(pros::E_MOTOR_ENCODER_ROTATIONS);
 
-		intake_A.set_gearing(pros::E_MOTOR_GEAR_GREEN);
-		intake_B.set_gearing(pros::E_MOTOR_GEAR_BLUE);
-		intake_C.set_gearing(pros::E_MOTOR_GEAR_BLUE);
+		intake.set_gearing(pros::E_MOTOR_GEAR_GREEN);
 
-		intake_A.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-		intake_B.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-		intake_C.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+
+		intake.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+
 
 		vis_sens.set_led_pwm(100);
 	}

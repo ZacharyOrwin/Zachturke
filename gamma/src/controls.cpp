@@ -81,14 +81,12 @@ namespace Controls {
 	}
 
 
-	void processHood() {
+	void processLondon() {
 		pros::Controller& controller = BotConnections::controller;
-
-		bool R2_on = controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2);
-
-		BotConnections::hood.set_value(R2_on);
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)){
+			BotConnections::LondonLift.move(Properties::MAX_MOTOR_VOLTS);
+		}
 	}
-
 
 	void processToggles() {
 		pros::Controller& controller = BotConnections::controller;
