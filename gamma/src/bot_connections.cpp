@@ -1,6 +1,3 @@
-#include "bot_connections.hpp"
-
-
 namespace BotConnections {
 	
 	pros::Controller controller(pros::E_CONTROLLER_MASTER);
