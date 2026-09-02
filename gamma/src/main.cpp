@@ -82,9 +82,5 @@ void opcontrol() {
 		pros::delay(Properties::TICK_DELAY_MSEC);
 
 		processDrive();
-		processIntake();
-		processHood();
-		processToggles();
-		processPark();
 	}
 }

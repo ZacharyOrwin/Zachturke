@@ -16,7 +16,6 @@ namespace BotConnections {
 	pros::MotorGroup LondonLift({11,-12});
 
 
-	pros::adi::DigitalOut AaronArm('A');
 
 
 
