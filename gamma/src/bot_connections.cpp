@@ -12,7 +12,7 @@ namespace BotConnections {
 	pros::Rotation LRODOM(8);
 	pros::Rotation FBODOM(9);
 
-	pros::Motor intake(-10);\
+	pros::Motor intake(-10);
 	pros::MotorGroup LondonLift({11,-12});
 
 
@@ -36,8 +36,5 @@ namespace BotConnections {
 
 
 		intake.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-
-
-		vis_sens.set_led_pwm(100);
 	}
 }
