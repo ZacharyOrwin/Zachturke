@@ -79,8 +79,8 @@ void opcontrol() {
 
 	// CONTROLS START.
 	while (true) {
-		pros::delay(Properties::TICK_DELAY_MSEC);
-
 		processDrive();
+		processLondon();
+		pros::delay(Properties::TICK_DELAY_MSEC);
 	}
 }

@@ -12,26 +12,26 @@ namespace Controls {
 	void processDrive() {
 		pros::Controller& controller = BotConnections::controller;
 
-		int Y = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
-		int X = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
+		int left_input = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
+		int right_input = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_Y);
 
-		int left_power  = Y + X;
-		int right_power = Y - X;
+		const int deadband = 10;
+		if (left_input > -deadband && left_input < deadband) left_input = 0;
+		if (right_input > -deadband && right_input < deadband) right_input = 0;
 
-		BotConnections::left_mg.move(left_power * Properties::LEFT_DRIVE_BIAS);
-		BotConnections::right_mg.move(right_power * Properties::RIGHT_DRIVE_BIAS);
+		BotConnections::left_mg.move(left_input * Properties::LEFT_DRIVE_BIAS);
+		BotConnections::right_mg.move(right_input * Properties::RIGHT_DRIVE_BIAS);
 	}
-
-
-	
-
 
 	void processLondon() {
 		pros::Controller& controller = BotConnections::controller;
-		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)){
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
 			BotConnections::LondonLift.move(Properties::MAX_MOTOR_VOLTS);
+		} else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+			BotConnections::LondonLift.move(-Properties::MAX_MOTOR_VOLTS);
+		} else {
+			BotConnections::LondonLift.brake();
 		}
 	}
-
 
 }
