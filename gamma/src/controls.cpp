@@ -15,7 +15,7 @@ namespace Controls {
 		int Y = controller.get_analog(pros::E_CONTROLLER_ANALOG_LEFT_Y);
 		int X = controller.get_analog(pros::E_CONTROLLER_ANALOG_RIGHT_X);
 
-		int left_power  = Y + X;
+		int left_power = Y + X;
 		int right_power = Y - X;
 
 		BotConnections::left_mg.move(left_power * Properties::LEFT_DRIVE_BIAS);

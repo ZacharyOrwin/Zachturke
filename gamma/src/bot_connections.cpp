@@ -5,8 +5,8 @@ namespace BotConnections {
 	
 	pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
-	pros::MotorGroup left_mg({1});
-	pros::MotorGroup right_mg({4});
+	pros::MotorGroup left_mg({5,4,12});
+	pros::MotorGroup right_mg({3,8,6});
 
 	pros::Imu imu(7);
 	pros::Rotation LRODOM(8);
