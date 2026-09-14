@@ -112,6 +112,24 @@ namespace Autonomous {
 	
 
 
+	ActionRunStatus ColorSort::run_tick() { return ACTION_RUN_COMPLETE; }
+	void ColorSort::start() {}
+
+	ActionRunStatus Intake::run_tick() { return ACTION_RUN_COMPLETE; }
+	void Intake::start() {}
+
+	ActionRunStatus Hood::run_tick() { return ACTION_RUN_COMPLETE; }
+	void Hood::start() {}
+
+	ActionRunStatus Unloader::run_tick() { return ACTION_RUN_COMPLETE; }
+	void Unloader::start() {}
+
+	ActionRunStatus Descore::run_tick() { return ACTION_RUN_COMPLETE; }
+	void Descore::start() {}
+
+	ActionRunStatus Park::run_tick() { return ACTION_RUN_COMPLETE; }
+	void Park::start() {}
+
 	void Align::start() {}
 
 

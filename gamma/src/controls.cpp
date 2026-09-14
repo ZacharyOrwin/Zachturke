@@ -1,6 +1,6 @@
 #include "controls.hpp"
 #include "autonomous.hpp"
-#include "bot_connections.cpp"
+#include "bot_connections.hpp"
 #include "properties.hpp"
 #include "vector2.hpp"
 
