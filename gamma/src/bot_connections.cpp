@@ -1,5 +1,11 @@
 #include "bot_connections.hpp"
 
+//Lift left - Port 2
+//Lift right - N/A
+//Intake top - Port 1
+//Intake bottom - Port 4
+//Horizontal ODOM pod - Port 7
+//Vertical ODOM pod - Port 11
 
 namespace BotConnections {
 	
