@@ -103,65 +103,11 @@ namespace Autonomous {
 					)
 				);
 
-			} else if (def == "COLSORT") {
-				act = std::make_shared<ColorSort>(
-					parse_parameter_tokens<ColorSort, ColorSort::Config>(
-						def_col_sort_cfg,
-						param_tokens,
-						ColorSort::parse,
-						ColorSort::parse_cleanup
-					)
-				);
+			} 
 
-			} else if (def == "INTAKE") {
-				act = std::make_shared<Intake>(
-					parse_parameter_tokens<Intake, Intake::Config>(
-						def_intake_cfg,
-						param_tokens,
-						Intake::parse,
-						Intake::parse_cleanup
-					)
-				);
 
-			} else if (def == "HOOD") {
-				act = std::make_shared<Hood>(
-					parse_parameter_tokens<Hood, Hood::Config>(
-						def_hood_cfg,
-						param_tokens,
-						Hood::parse,
-						Hood::parse_cleanup
-					)
-				);
 
-			} else if (def == "UNLOADER") {
-				act = std::make_shared<Unloader>(
-					parse_parameter_tokens<Unloader, Unloader::Config>(
-						def_unloader_cfg,
-						param_tokens,
-						Unloader::parse,
-						Unloader::parse_cleanup
-					)
-				);
 
-			} else if (def == "DESCORE") {
-				act = std::make_shared<Descore>(
-					parse_parameter_tokens<Descore, Descore::Config>(
-						def_descore_cfg,
-						param_tokens,
-						Descore::parse,
-						Descore::parse_cleanup
-					)
-				);
-
-			} else if (def == "PARK") {
-				act = std::make_shared<Park>(
-					parse_parameter_tokens<Park, Park::Config>(
-						def_park_cfg,
-						param_tokens,
-						Park::parse,
-						Park::parse_cleanup
-					)
-				);
 
 			} else { continue; }
 
@@ -294,107 +240,16 @@ namespace Autonomous {
 	}
 
 
-	void ColorSort::parse(Config& cfg, ParameterToken t, ValueToken v) {
-		if (t == "COL") {
-			if (v == "red") {
-				cfg.color = Properties::COLOR_SORT_RED;
-			} else if (v == "blue") {
-				cfg.color = Properties::COLOR_SORT_BLUE;
-			}
-		
-		} else if (t == "CROT") {
-			cfg.closing_rotations = std::stof(v);
-
-		} else if (t == "TOG") {
-			cfg.toggling = std::stoi(v);
-
-		} else if (t == "TIME") {
-			cfg.timeout = std::stof(v);
-
-		} else if (t == "BLK") {
-			cfg.blocking = std::stoi(v);
-		}
-	}
 
 
-	void Intake::parse(Config& cfg, ParameterToken t, ValueToken v) {
-		if (t == "MODE") {
-			if (v == "top") {
-				cfg.intake_mode = Properties::INTAKE_TOP;
-			} else if (v == "bottom") {
-				cfg.intake_mode = Properties::INTAKE_BOTTOM;
-			} else if (v == "reverse") {
-				cfg.intake_mode = Properties::INTAKE_REVERSE;
-			}
-			
-		} else if (t == "TOG") {
-			cfg.toggling = std::stoi(v);
-
-		} else if (t == "TIME") {
-			cfg.timeout = std::stof(v);
-
-		} else if (t == "BLK") {
-			cfg.blocking = std::stoi(v);
-		}
-	}
 
 
-	void Hood::parse(Config& cfg, ParameterToken t, ValueToken v) {
-		if (t == "TOG") {
-			cfg.toggling = std::stoi(v);
-
-		} else if (t == "TIME") {
-			cfg.timeout = std::stof(v);
-
-		} else if (t == "BLK") {
-			cfg.blocking = std::stoi(v);
-		}
-	}
 
 
-	void Unloader::parse(Config& cfg, ParameterToken t, ValueToken v) {
-		if (t == "TOG") {
-			cfg.toggling = std::stoi(v);
-
-		} else if (t == "TIME") {
-			cfg.timeout = std::stof(v);
-
-		} else if (t == "BLK") {
-			cfg.blocking = std::stoi(v);
-		}
-	}
 
 
-	void Descore::parse(Config& cfg, ParameterToken t, ValueToken v) {
-		if (t == "TOG") {
-			cfg.toggling = std::stoi(v);
-
-		} else if (t == "TIME") {
-			cfg.timeout = std::stof(v);
-
-		} else if (t == "BLK") {
-			cfg.blocking = std::stoi(v);
-		}
-	}
 
 
-	void Park::parse(Config& cfg, ParameterToken t, ValueToken v) {
-		if (t == "SPD") {
-			cfg.speed = std::stoi(v);
-
-		} else if (t == "TDIS") {
-			cfg.trigger_dist = std::stof(v);
-
-		} else if (t == "TOG") {
-			cfg.toggling = std::stoi(v);
-
-		} else if (t == "TIME") {
-			cfg.timeout = std::stof(v);
-
-		} else if (t == "BLK") {
-			cfg.blocking = std::stoi(v);
-		}
-	}
 
 
 	void Align::parse_cleanup(Config& cfg) {}
@@ -402,33 +257,4 @@ namespace Autonomous {
 
 	void Travel::parse_cleanup(Config& cfg) {}
 
-
-	void ColorSort::parse_cleanup(Config& cfg) {
-		cfg.blocking = !cfg.toggling && cfg.blocking;
-	}
-
-
-	void Intake::parse_cleanup(Config& cfg) {
-		cfg.blocking = !cfg.toggling && cfg.blocking;
-	}
-
-
-	void Hood::parse_cleanup(Config& cfg) {
-		cfg.blocking = !cfg.toggling && cfg.blocking;
-	}
-
-
-	void Unloader::parse_cleanup(Config& cfg) {
-		cfg.blocking = !cfg.toggling && cfg.blocking;
-	}
-
-
-	void Descore::parse_cleanup(Config& cfg) {
-		cfg.blocking = !cfg.toggling && cfg.blocking;
-	}
-
-
-	void Park::parse_cleanup(Config& cfg) {
-		cfg.blocking = !cfg.toggling && cfg.blocking;
-	}
 }

@@ -5,17 +5,6 @@
 
 namespace Properties {
 	
-	enum IntakeMode {
-		INTAKE_OFF,
-		INTAKE_REVERSE,
-		INTAKE_TOP,
-		INTAKE_BOTTOM
-	};
-
-	enum ColorSortColor {
-		COLOR_SORT_RED,
-		COLOR_SORT_BLUE
-	};
 
 	inline constexpr int TICK_DELAY_MSEC = 10;
 	inline constexpr int SCREEN_REFRESH_DELAY_MSEC = 400;
@@ -26,7 +15,6 @@ namespace Properties {
 	inline constexpr float RIGHT_DRIVE_BIAS = 0.95;
 	inline int global_time_msec = 0;
 	inline int screen_refresh_cycles = 0;
-	inline IntakeMode intake_mode = INTAKE_TOP;
 
 	inline float get_gear_ratio(pros::v5::MotorGears gear_set) {
 		switch (gear_set)
