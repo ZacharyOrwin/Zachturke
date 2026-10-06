@@ -1,0 +1,9 @@
+Compiled src/instructions_parser.cpp [32;01m[OK][0m
+Compiled src/main.cpp [32;01m[OK][0m
+Compiled src/onboard_gui.cpp [32;01m[OK][0m
+Adding timestamp [32;01m[OK][0m
+Linking hot project with ./bin/cold.package.elf and libc,liblvgl,libm,libpros [32;01m[OK][0m
+Section sizes:
+   text	   data	    bss	  total	    hex	filename
+20.80KB  76.00B  46.01MB  46.03MB 2e054dc bin/hot.package.elf
+Creating bin/hot.package.bin for VEX EDR V5 [32;01m[DONE][0m

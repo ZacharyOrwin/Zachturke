@@ -103,47 +103,6 @@ namespace Autonomous {
                 static void parse_cleanup(Config& cfg);
 	};
 
-	struct ColorSort : Action {
-		struct Config : BConfig, Toggleable {
-			Properties::ColorSortColor color = Properties::COLOR_SORT_RED;
-			float closing_rotations = 0;
-
-			Config(Properties::ColorSortColor c, float cr, float t, bool tog, bool b) :
-				color(c), closing_rotations(cr), BConfig(b), Toggleable(tog, t) {}
-		};
-
-		bool closing = false;
-                bool flap_open = false;
-		float last_open_ang = 0;
-
-                static inline bool toggle_state = false;
-
-		ColorSort(Config c) : Action(std::make_shared<Config>(c)) {}
-		ActionRunStatus run_tick() override;
-                void start() override;
-
-		static void parse(Config& cfg, ParameterToken t, ValueToken v);
-                static void parse_cleanup(Config& cfg);
-	};
-
-	struct Intake : Action {
-		struct Config : BConfig, Toggleable {
-			Properties::IntakeMode intake_mode = Properties::INTAKE_TOP;
-
-			Config(Properties::IntakeMode i_m, float t, bool tog, bool b) :
-				intake_mode(i_m), BConfig(b), Toggleable(tog, t) {}
-		};
-
-                static inline bool toggle_state = false;
-
-		Intake(Config c) : Action(std::make_shared<Config>(c)) {}
-		ActionRunStatus run_tick() override;
-                void start() override;
-
-		static void parse(Config& cfg, ParameterToken t, ValueToken v);
-                static void parse_cleanup(Config& cfg);
-	};
-
         struct Hood : Action {
 		struct Config : BConfig, Toggleable {
 			Config(float t, bool tog, bool b) :
@@ -192,25 +151,6 @@ namespace Autonomous {
                 static void parse_cleanup(Config& cfg);
 	};
 
-        struct Park : Action {
-                struct Config : BConfig, Toggleable {
-                        int speed = 0;
-                        float trigger_dist = 0;
-
-                        Config(float s, float td, float t, bool tog, bool b) :
-				speed(s), trigger_dist(td), BConfig(b), Toggleable(tog, t) {}
-		};
-
-                static inline bool toggle_state = false;
-
-		Park(Config c) : Action(std::make_shared<Config>(c)) {}
-		ActionRunStatus run_tick() override;
-                void start() override;
-
-		static void parse(Config& cfg, ParameterToken t, ValueToken v);
-                static void parse_cleanup(Config& cfg);
-        };
-
         std::string get_action_type(std::shared_ptr<Action>& action);
 
 	typedef std::pair<std::string, std::queue<std::shared_ptr<Action>>> Routine;
@@ -231,12 +171,9 @@ namespace Autonomous {
 
 	extern Align::Config def_align_cfg;
 	extern Travel::Config def_travel_cfg;
-	extern ColorSort::Config def_col_sort_cfg;
-	extern Intake::Config def_intake_cfg;
         extern Hood::Config def_hood_cfg;
         extern Unloader::Config def_unloader_cfg;
         extern Descore::Config def_descore_cfg;
-        extern Park::Config def_park_cfg;
 
 	void load_routine_files();
 	void parse_routine_file(std::filesystem::path path);

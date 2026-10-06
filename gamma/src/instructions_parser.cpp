@@ -10,12 +10,9 @@ namespace Autonomous {
 
 	Align::Config def_align_cfg(KBAT(), 0.0, 0.0, 5.0, true);
 	Travel::Config def_travel_cfg(KBAT(), 0.0, 0.0, 5.0, true);
-	ColorSort::Config def_col_sort_cfg(Properties::COLOR_SORT_RED, 0.0, 5.0, false, true);
-	Intake::Config def_intake_cfg(Properties::INTAKE_TOP, 5.0, false, true);
 	Hood::Config def_hood_cfg(5.0, false, true);
         Unloader::Config def_unloader_cfg(5.0, false, true);
         Descore::Config def_descore_cfg(5.0, false, true);
-	Park::Config def_park_cfg(0, 0.0, 5.0, false, true);
 
 
 	void load_routine_files() {
@@ -103,16 +100,11 @@ namespace Autonomous {
 					)
 				);
 
-			} 
+			} else {
+				continue;
+			}
 
-
-
-
-
-			} else { continue; }
-
-			rt.second.push(act);
-		}
+			rt.second.push(act);		}
 
 		routines.push_back(std::make_shared<Routine>(rt));
 		f.close();
