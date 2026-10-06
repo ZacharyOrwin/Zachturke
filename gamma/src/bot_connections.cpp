@@ -11,15 +11,15 @@ namespace BotConnections {
 	
 	pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
-	pros::MotorGroup left_mg({5,4,12});
-	pros::MotorGroup right_mg({3,8,6});
+	pros::MotorGroup left_mg({15,18,16});
+	pros::MotorGroup right_mg({17,19,20});
 
 	pros::Imu imu(7);
-	pros::Rotation LRODOM(8);
-	pros::Rotation FBODOM(9);
+	pros::Rotation LRODOM(11);
+	pros::Rotation FBODOM(14);
 
 	pros::Motor intake(-10);
-	pros::MotorGroup LondonLift({11,-12});
+	pros::MotorGroup LondonLift({2,-1});
 
 
 
