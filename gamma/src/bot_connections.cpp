@@ -12,7 +12,7 @@ namespace BotConnections {
 	pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
 	pros::MotorGroup left_mg({-15,-18,-16});
-	pros::MotorGroup right_mg({-17,-19,-10});
+	pros::MotorGroup right_mg({17,-19,-10});
 
 	pros::Imu imu(7);
 	pros::Rotation LRODOM(11);

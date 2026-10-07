@@ -2,6 +2,7 @@
 #include "autonomous.hpp"
 #include "bot_connections.hpp"
 #include "properties.hpp"
+#include "recorded_auton.hpp"
 #include "vector2.hpp"
 #include <algorithm>
 #include <cstdlib>
@@ -97,9 +98,25 @@ namespace Controls {
 
 	void processLondon() {
 		pros::Controller& controller = BotConnections::controller;
+		const bool recording_trigger =
+			controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)
+			&& controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT);
 		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
 			BotConnections::LondonLift.move(Properties::MAX_MOTOR_VOLTS);
-		} else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)) {
+		} else if (
+			controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)
+			&& !recording_trigger
+		) {
+			BotConnections::LondonLift.move(-Properties::MAX_MOTOR_VOLTS);
+		} else {
+			BotConnections::LondonLift.brake();
+		}
+	}
+
+	void processLondonButtons(std::uint16_t buttons) {
+		if (buttons & RecordedAuton::BUTTON_UP) {
+			BotConnections::LondonLift.move(Properties::MAX_MOTOR_VOLTS);
+		} else if (buttons & RecordedAuton::BUTTON_DOWN) {
 			BotConnections::LondonLift.move(-Properties::MAX_MOTOR_VOLTS);
 		} else {
 			BotConnections::LondonLift.brake();

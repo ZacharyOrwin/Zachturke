@@ -1,4 +1,5 @@
 #include "main.h"
+#include "recorded_auton.hpp"
 
 
 /**
@@ -19,7 +20,9 @@ void initialize() {
  * the VEX Competition Switch, following either autonomous or opcontrol. When
  * the robot is enabled, this task will exit.
  */
-void disabled() {}
+void disabled() {
+	RecordedAuton::stop_recording();
+}
 
 /**
  * Runs after initialize(), and before autonomous when connected to the Field
@@ -47,6 +50,12 @@ void competition_initialize() {
  */
 void autonomous() {
 	using namespace Autonomous;
+
+	if (!RecordedAuton::selected_recording_file.empty()) {
+		RecordedAuton::replay_selected_recording();
+		return;
+	}
+	if (active_routine == nullptr) return;
 
 	// AUTONOMOUS START.
 	initialize_actions_queue();
@@ -79,6 +88,7 @@ void opcontrol() {
 
 	// CONTROLS START.
 	while (true) {
+		RecordedAuton::update_driver_recording();
 		processDrive();
 		processLondon();
 		pros::delay(Properties::TICK_DELAY_MSEC);

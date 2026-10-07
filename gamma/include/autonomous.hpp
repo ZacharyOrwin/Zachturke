@@ -177,6 +177,7 @@ namespace Autonomous {
 
 	void load_routine_files();
 	void parse_routine_file(std::filesystem::path path);
+	void write_recording_cache(const std::string& filename);
 	template <typename T, typename G>
 	G parse_parameter_tokens(
 		G& cfg,

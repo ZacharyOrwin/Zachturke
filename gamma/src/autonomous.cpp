@@ -1,10 +1,12 @@
 
 #include "autonomous.hpp"
+#include "recorded_auton.hpp"
 
 
 namespace Autonomous {
 
 	void select_routine(int index) {
+		RecordedAuton::clear_selected_recording();
 		active_routine = routines.at(index).get();
 	}
 
@@ -12,6 +14,7 @@ namespace Autonomous {
 	void select_routine(std::string name) {
 		for (auto& routine : routines) {
 			if (routine->first == name) {
+				RecordedAuton::clear_selected_recording();
 				active_routine = routine.get();
 				return;
 			}

@@ -1,4 +1,5 @@
 #include "autonomous.hpp"
+#include "recorded_auton.hpp"
 #include <fstream>
 #include <stdio.h>
 
@@ -148,6 +149,7 @@ namespace Autonomous {
 				tokens.push_back(token);
 			}
 
+			if (tokens.size() < 2) continue;
 			std::string def = tokens.at(0);
 			std::string val = tokens.at(1);
 
@@ -157,6 +159,8 @@ namespace Autonomous {
 				// then it cannot be selected. Will be nullptr.
 				std::replace(val.begin(), val.end(), '_', ' ');
 				select_routine(val);
+			} else if (def == "RECORDING") {
+				RecordedAuton::restore_selected_recording(val);
 			}
 		}
 
@@ -174,6 +178,21 @@ namespace Autonomous {
 		f << "ROUTINE " + routine_name;
 
 		f.close();
+	}
+
+	void write_recording_cache(const std::string& filename) {
+		std::filesystem::path p(cache_directory);
+		std::ofstream f(p);
+
+		if (!f.is_open()) {
+			std::printf("Could not save selected recording to the cache file.\n");
+			return;
+		}
+
+		f << "RECORDING " << filename;
+		if (!f.good()) {
+			std::printf("Could not write selected recording to the cache file.\n");
+		}
 	}
 
 

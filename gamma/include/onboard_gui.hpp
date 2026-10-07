@@ -19,8 +19,11 @@ namespace OnboardGUI {
 	void initialize_selector();
 	void define_selector_visuals();
 	void load_routines_list();
+	void refresh_recordings();
 
 	void on_routine_btn_cb(lv_event_t* e);
+	void on_recording_btn_cb(lv_event_t* e);
 
 	void select_routine(std::string routine_name);
+	void select_recording(const std::string& filename);
 }
