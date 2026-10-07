@@ -11,8 +11,13 @@ namespace Properties {
 	inline constexpr int MAX_MOTOR_VOLTS = 127;
 	inline constexpr float FINAL_DRIVE_RATIO = 3.0/4.0 /*2/3.0*/;
 	inline constexpr float WHEEL_DIAMETER_IN = 3.25;
-	inline constexpr float LEFT_DRIVE_BIAS = 1.05;
-	inline constexpr float RIGHT_DRIVE_BIAS = 0.95;
+	inline constexpr float LEFT_DRIVE_BIAS = 1.0 ;
+	inline constexpr float RIGHT_DRIVE_BIAS = 1.0;
+	inline constexpr float LR_ODOM_DIRECTION = 1.0;
+	inline constexpr float ODOM_DRIVE_CORRECTION_GAIN = 0.5;
+	inline constexpr int ODOM_MAX_TURN_CORRECTION = 24;
+	inline constexpr int ODOM_SAMPLE_DELAY_MSEC = 100;
+	inline constexpr int ODOM_MIN_FB_DELTA_CDEG = 5;
 	inline int global_time_msec = 0;
 	inline int screen_refresh_cycles = 0;
 
