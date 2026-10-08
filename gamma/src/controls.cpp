@@ -98,15 +98,9 @@ namespace Controls {
 
 	void processLondon() {
 		pros::Controller& controller = BotConnections::controller;
-		const bool recording_trigger =
-			controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)
-			&& controller.get_digital(pros::E_CONTROLLER_DIGITAL_LEFT);
-		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_UP)) {
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
 			BotConnections::LondonLift.move(Properties::MAX_MOTOR_VOLTS);
-		} else if (
-			controller.get_digital(pros::E_CONTROLLER_DIGITAL_DOWN)
-			&& !recording_trigger
-		) {
+		} else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
 			BotConnections::LondonLift.move(-Properties::MAX_MOTOR_VOLTS);
 		} else {
 			BotConnections::LondonLift.brake();
@@ -114,9 +108,9 @@ namespace Controls {
 	}
 
 	void processLondonButtons(std::uint16_t buttons) {
-		if (buttons & RecordedAuton::BUTTON_UP) {
+		if (buttons & (RecordedAuton::BUTTON_L1 | RecordedAuton::BUTTON_UP)) {
 			BotConnections::LondonLift.move(Properties::MAX_MOTOR_VOLTS);
-		} else if (buttons & RecordedAuton::BUTTON_DOWN) {
+		} else if (buttons & (RecordedAuton::BUTTON_L2 | RecordedAuton::BUTTON_DOWN)) {
 			BotConnections::LondonLift.move(-Properties::MAX_MOTOR_VOLTS);
 		} else {
 			BotConnections::LondonLift.brake();
