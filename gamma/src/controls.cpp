@@ -21,7 +21,7 @@ namespace Controls {
 		std::uint16_t previous_london_buttons = 0;
 		bool london_position_control_active = false;
 		bool previous_pneumatics_y = false;
-		constexpr std::int32_t LONDON_POSITION_VELOCITY_RPM = 100;
+		constexpr std::int32_t LONDON_POSITION_VELOCITY_RPM = 200;
 		constexpr std::int32_t INTAKE_MAX_VELOCITY_RPM = 200;
 		constexpr double LONDON_GEAR_REDUCTION = 84.0 / 12.0;
 
@@ -62,9 +62,9 @@ namespace Controls {
 				if (new_presses & RecordedAuton::BUTTON_X) {
 					command_london_position(0.0);
 				} else if (new_presses & RecordedAuton::BUTTON_A) {
-					command_london_position(90.0);
+					command_london_position(1800.0);
 				} else if (new_presses & RecordedAuton::BUTTON_B) {
-					command_london_position(180.0);
+					command_london_position(900.0);
 				} else if (!london_position_control_active) {
 					BotConnections::LondonLift.brake();
 				}
