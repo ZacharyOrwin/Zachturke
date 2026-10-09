@@ -17,6 +17,8 @@ namespace Properties {
 	inline constexpr float LR_ODOM_DIRECTION = 1.0;
 	inline constexpr float FB_ODOM_DIRECTION = 1.0;
 	inline constexpr float RECORDED_AUTON_LOOKAHEAD_CDEG = 2500.0;
+	inline constexpr float RECORDED_AUTON_HEADING_GAIN = 18.0;
+	inline constexpr float RECORDED_AUTON_MAX_HEADING_CORRECTION = 24.0;
 	inline constexpr float ODOM_DRIVE_CORRECTION_GAIN = 0.5;
 	inline constexpr int ODOM_MAX_TURN_CORRECTION = 24;
 	inline constexpr int ODOM_SAMPLE_DELAY_MSEC = 100;

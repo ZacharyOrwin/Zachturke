@@ -537,7 +537,17 @@ namespace RecordedAuton {
 				-MAX_STEERING_RATIO,
 				std::min(steering_ratio, MAX_STEERING_RATIO)
 			);
-			const float turn = -forward * steering_ratio;
+			const float heading_error = normalize_radians(
+				path[sample_index].heading - relative_heading
+			);
+			const float heading_correction = std::max(
+				-Properties::RECORDED_AUTON_MAX_HEADING_CORRECTION,
+				std::min(
+					Properties::RECORDED_AUTON_HEADING_GAIN * heading_error,
+					Properties::RECORDED_AUTON_MAX_HEADING_CORRECTION
+				)
+			);
+			const float turn = -forward * steering_ratio + heading_correction;
 
 			if (nearest_index + 1 >= path.size()
 				&& nearest_distance_squared <= MIN_FORWARD_DELTA_CDEG * MIN_FORWARD_DELTA_CDEG
@@ -545,7 +555,7 @@ namespace RecordedAuton {
 				break;
 			}
 			if (elapsed > final_time + MAX_REPLAY_OVERRUN_MSEC) {
-				std::printf("Replay ended at its maximum overrun time.\n");
+				std::printf("Replay ended at its maxzm overrun time.\n");
 				break;
 			}
 
