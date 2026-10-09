@@ -64,7 +64,7 @@ namespace Controls {
 				} else if (new_presses & RecordedAuton::BUTTON_A) {
 					command_london_position(1800.0);
 				} else if (new_presses & RecordedAuton::BUTTON_B) {
-					command_london_position(900.0);
+					command_london_position(3600.0);
 				} else if (!london_position_control_active) {
 					BotConnections::LondonLift.brake();
 				}
