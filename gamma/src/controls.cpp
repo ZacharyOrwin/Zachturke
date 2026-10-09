@@ -100,7 +100,7 @@ namespace Controls {
 		}
 	}
 
-	// Each of the functions below are getting called every 10 milliseconds within a while loop.
+	// Each function below runs once per configured control tick.
 
 	void processDrive() {
 		pros::Controller& controller = BotConnections::controller;
