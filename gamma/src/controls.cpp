@@ -46,12 +46,12 @@ namespace Controls {
 
 		void process_london_buttons(std::uint16_t buttons) {
 			const bool moving_manually =
-				(buttons & (RecordedAuton::BUTTON_L1 | RecordedAuton::BUTTON_UP))
-				|| (buttons & (RecordedAuton::BUTTON_L2 | RecordedAuton::BUTTON_DOWN));
-			if (buttons & (RecordedAuton::BUTTON_L1 | RecordedAuton::BUTTON_UP)) {
+				(buttons & (RecordedAuton::BUTTON_L2 | RecordedAuton::BUTTON_UP))
+				|| (buttons & (RecordedAuton::BUTTON_L1 | RecordedAuton::BUTTON_DOWN));
+			if (buttons & (RecordedAuton::BUTTON_L2 | RecordedAuton::BUTTON_UP)) {
 				BotConnections::LondonLift.move(Properties::MAX_MOTOR_VOLTS);
 				london_position_control_active = false;
-			} else if (buttons & (RecordedAuton::BUTTON_L2 | RecordedAuton::BUTTON_DOWN)) {
+			} else if (buttons & (RecordedAuton::BUTTON_L1 | RecordedAuton::BUTTON_DOWN)) {
 				BotConnections::LondonLift.move(-Properties::MAX_MOTOR_VOLTS);
 				london_position_control_active = false;
 			}
