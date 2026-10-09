@@ -17,7 +17,7 @@ namespace RecordedAuton {
 		constexpr char RECORDING_PREFIX[] = "recording_";
 		constexpr char RECORDING_EXTENSION[] = ".txt";
 		constexpr char RECORDING_HEADER[] = "RECORDED_AUTON_V1";
-		constexpr float MAX_STEERING = 90.0f;
+		constexpr float MAX_STEERING_RATIO = 0.5f;
 		constexpr float MIN_FORWARD_DELTA_CDEG = 500.0f;
 		constexpr std::size_t PATH_SEARCH_WINDOW = 300;
 		constexpr std::uint32_t MAX_REPLAY_OVERRUN_MSEC = 10000;
@@ -255,8 +255,8 @@ namespace RecordedAuton {
 					);
 					const float lr = sample.lr_delta_cdeg * Properties::LR_ODOM_DIRECTION;
 					const float fb = sample.fb_delta_cdeg * Properties::FB_ODOM_DIRECTION;
-					x += lr * std::cos(midpoint_heading) + fb * std::sin(midpoint_heading);
-					y += fb * std::cos(midpoint_heading) - lr * std::sin(midpoint_heading);
+					x += lr * std::cos(midpoint_heading) - fb * std::sin(midpoint_heading);
+					y += lr * std::sin(midpoint_heading) + fb * std::cos(midpoint_heading);
 				}
 				path.push_back(Point { x, y, relative_heading, sample });
 				previous_heading = heading;
@@ -269,14 +269,9 @@ namespace RecordedAuton {
 		}
 
 		void drive_pure_pursuit(float forward, float turn) {
-			static_assert(Properties::FINAL_DRIVE_RATIO > 0.0f,
-				"FINAL_DRIVE_RATIO must be positive for replay compensation.");
-			// FINAL_DRIVE_RATIO converts motor speed to wheel speed, so invert it for commands.
-			const float ratio_compensation = 1.0f / Properties::FINAL_DRIVE_RATIO;
-			float left = (forward + turn) * Properties::LEFT_DRIVE_BIAS
-				* ratio_compensation;
-			float right = (forward - turn) * Properties::RIGHT_DRIVE_BIAS
-				* ratio_compensation;
+			// Replay commands are recorded motor inputs, not wheel-speed requests.
+			float left = (forward + turn) * Properties::LEFT_DRIVE_BIAS;
+			float right = (forward - turn) * Properties::RIGHT_DRIVE_BIAS;
 
 			const float peak_output = std::max(std::abs(left), std::abs(right));
 			if (peak_output > 127.0f) {
@@ -364,8 +359,8 @@ namespace RecordedAuton {
 
 		recording_stream << "END " << recording_time_msec << '\n';
 		recording_stream.flush();
-		const bool write_succeeded = recording_stream.good();
 		recording_stream.close();
+		const bool write_succeeded = recording_stream.good();
 		if (!write_succeeded) {
 			std::printf("Recording could not be finalized on the SD card.\n");
 			recording_filename.clear();
@@ -462,8 +457,8 @@ namespace RecordedAuton {
 			);
 			const float lr_delta = (lr_position - previous_lr) * Properties::LR_ODOM_DIRECTION;
 			const float fb_delta = (fb_position - previous_fb) * Properties::FB_ODOM_DIRECTION;
-			live_x += lr_delta * std::cos(midpoint_heading) + fb_delta * std::sin(midpoint_heading);
-			live_y += fb_delta * std::cos(midpoint_heading) - lr_delta * std::sin(midpoint_heading);
+			live_x += lr_delta * std::cos(midpoint_heading) - fb_delta * std::sin(midpoint_heading);
+			live_y += lr_delta * std::sin(midpoint_heading) + fb_delta * std::cos(midpoint_heading);
 			previous_lr = lr_position;
 			previous_fb = fb_position;
 			previous_heading = heading;
@@ -511,12 +506,9 @@ namespace RecordedAuton {
 
 			const float target_dx = path[target_index].x - live_x;
 			const float target_dy = path[target_index].y - live_y;
-			const float local_right = target_dx * std::cos(relative_heading)
-				- target_dy * std::sin(relative_heading);
+			const float local_left = target_dx * std::cos(relative_heading)
+				+ target_dy * std::sin(relative_heading);
 			const float target_distance_squared = target_dx * target_dx + target_dy * target_dy;
-			const float curvature = target_distance_squared > 1.0f
-				? 2.0f * local_right / target_distance_squared
-				: 0.0f;
 
 			float forward = elapsed <= final_time
 				? static_cast<float>(samples[sample_index].forward_input)
@@ -528,7 +520,7 @@ namespace RecordedAuton {
 				const float endpoint_distance = std::sqrt(
 					endpoint_dx * endpoint_dx + endpoint_dy * endpoint_dy
 				);
-				const float endpoint_forward = endpoint_dx * std::sin(relative_heading)
+				const float endpoint_forward = -endpoint_dx * std::sin(relative_heading)
 					+ endpoint_dy * std::cos(relative_heading);
 				const float approach_speed = std::min(
 					static_cast<float>(endpoint_speed_limit),
@@ -538,8 +530,14 @@ namespace RecordedAuton {
 				);
 				forward = (endpoint_forward < 0.0f ? -1.0f : 1.0f) * approach_speed;
 			}
-			float turn = forward * curvature * Properties::RECORDED_AUTON_LOOKAHEAD_CDEG;
-			turn = std::max(-MAX_STEERING, std::min(turn, MAX_STEERING));
+			float steering_ratio = target_distance_squared > 1.0f
+				? local_left / std::sqrt(target_distance_squared)
+				: 0.0f;
+			steering_ratio = std::max(
+				-MAX_STEERING_RATIO,
+				std::min(steering_ratio, MAX_STEERING_RATIO)
+			);
+			const float turn = -forward * steering_ratio;
 
 			if (nearest_index + 1 >= path.size()
 				&& nearest_distance_squared <= MIN_FORWARD_DELTA_CDEG * MIN_FORWARD_DELTA_CDEG

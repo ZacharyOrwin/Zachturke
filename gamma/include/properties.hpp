@@ -6,9 +6,10 @@
 namespace Properties {
 	
 
-	inline constexpr int TICK_DELAY_MSEC = 5;
+	inline constexpr int TICK_DELAY_MSEC = 3;
 	inline constexpr int SCREEN_REFRESH_DELAY_MSEC = 400;
 	inline constexpr int MAX_MOTOR_VOLTS = 127;
+	// Wheel speed divided by motor speed for the external drivetrain gearing.
 	inline constexpr float FINAL_DRIVE_RATIO = 3.0/4.0 /*2/3.0*/;
 	inline constexpr float WHEEL_DIAMETER_IN = 3.25;
 	inline constexpr float LEFT_DRIVE_BIAS = 1.0 ;
