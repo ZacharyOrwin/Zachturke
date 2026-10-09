@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstdint>
+#include <cstdio>
 
 
 namespace Controls {
@@ -19,9 +20,64 @@ namespace Controls {
 		std::int32_t accumulated_fb_delta = 0;
 		int odom_sample_elapsed_msec = 0;
 		float odom_turn_correction = 0.0f;
+		std::uint16_t previous_london_buttons = 0;
+		bool london_position_control_active = false;
+		bool previous_pneumatics_y = false;
+		constexpr std::int32_t LONDON_POSITION_VELOCITY_RPM = 100;
 
 		int clamp_motor_input(int input) {
 			return std::max(-127, std::min(input, 127));
+		}
+
+		void command_london_position(double position_degrees) {
+			const std::int32_t result = BotConnections::LondonLift.move_absolute(
+				position_degrees, LONDON_POSITION_VELOCITY_RPM
+			);
+			if (result == PROS_ERR) {
+				std::printf("London lift position command failed.\n");
+				BotConnections::LondonLift.brake();
+				london_position_control_active = false;
+				return;
+			}
+			london_position_control_active = true;
+		}
+
+		void process_london_buttons(std::uint16_t buttons) {
+			const bool moving_manually =
+				(buttons & (RecordedAuton::BUTTON_L1 | RecordedAuton::BUTTON_UP))
+				|| (buttons & (RecordedAuton::BUTTON_L2 | RecordedAuton::BUTTON_DOWN));
+			if (buttons & (RecordedAuton::BUTTON_L1 | RecordedAuton::BUTTON_UP)) {
+				BotConnections::LondonLift.move(Properties::MAX_MOTOR_VOLTS);
+				london_position_control_active = false;
+			} else if (buttons & (RecordedAuton::BUTTON_L2 | RecordedAuton::BUTTON_DOWN)) {
+				BotConnections::LondonLift.move(-Properties::MAX_MOTOR_VOLTS);
+				london_position_control_active = false;
+			}
+
+			if (!moving_manually) {
+				const std::uint16_t new_presses =
+					buttons & static_cast<std::uint16_t>(~previous_london_buttons);
+				if (new_presses & RecordedAuton::BUTTON_X) {
+					command_london_position(0.0);
+				} else if (new_presses & RecordedAuton::BUTTON_A) {
+					command_london_position(90.0);
+				} else if (new_presses & RecordedAuton::BUTTON_B) {
+					command_london_position(180.0);
+				} else if (!london_position_control_active) {
+					BotConnections::LondonLift.brake();
+				}
+			}
+			previous_london_buttons = buttons;
+		}
+
+		void process_pneumatics_y(bool pressed) {
+			if (pressed && !previous_pneumatics_y) {
+				const std::int32_t result = BotConnections::london_pneumatic.toggle();
+				if (result == PROS_ERR) {
+					std::printf("Pneumatic toggle failed.\n");
+				}
+			}
+			previous_pneumatics_y = pressed;
 		}
 	}
 
@@ -98,23 +154,27 @@ namespace Controls {
 
 	void processLondon() {
 		pros::Controller& controller = BotConnections::controller;
-		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
-			BotConnections::LondonLift.move(Properties::MAX_MOTOR_VOLTS);
-		} else if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
-			BotConnections::LondonLift.move(-Properties::MAX_MOTOR_VOLTS);
-		} else {
-			BotConnections::LondonLift.brake();
-		}
+		std::uint16_t buttons = 0;
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) buttons |= RecordedAuton::BUTTON_L1;
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) buttons |= RecordedAuton::BUTTON_L2;
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)) buttons |= RecordedAuton::BUTTON_A;
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) buttons |= RecordedAuton::BUTTON_B;
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_X)) buttons |= RecordedAuton::BUTTON_X;
+		process_london_buttons(buttons);
 	}
 
 	void processLondonButtons(std::uint16_t buttons) {
-		if (buttons & (RecordedAuton::BUTTON_L1 | RecordedAuton::BUTTON_UP)) {
-			BotConnections::LondonLift.move(Properties::MAX_MOTOR_VOLTS);
-		} else if (buttons & (RecordedAuton::BUTTON_L2 | RecordedAuton::BUTTON_DOWN)) {
-			BotConnections::LondonLift.move(-Properties::MAX_MOTOR_VOLTS);
-		} else {
-			BotConnections::LondonLift.brake();
-		}
+		process_london_buttons(buttons);
+	}
+
+	void processPneumatics() {
+		process_pneumatics_y(
+			BotConnections::controller.get_digital(pros::E_CONTROLLER_DIGITAL_Y)
+		);
+	}
+
+	void processPneumaticsButtons(std::uint16_t buttons) {
+		process_pneumatics_y((buttons & RecordedAuton::BUTTON_Y) != 0);
 	}
 
 }

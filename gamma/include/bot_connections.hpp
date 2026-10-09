@@ -13,6 +13,7 @@ namespace BotConnections {
 	extern pros::Rotation FBODOM;
 	extern pros::Motor intake;
 	extern pros::MotorGroup LondonLift;
+	extern pros::adi::Pneumatics london_pneumatic;
 	
 	void initialize();
 }

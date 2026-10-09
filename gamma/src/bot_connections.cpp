@@ -20,6 +20,7 @@ namespace BotConnections {
 
 	pros::Motor intake(-10);
 	pros::MotorGroup LondonLift({2,-1});
+	pros::adi::Pneumatics london_pneumatic('A', false);
 
 
 

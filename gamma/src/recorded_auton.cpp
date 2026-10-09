@@ -267,6 +267,27 @@ namespace RecordedAuton {
 		int clamp_motor(int value) {
 			return std::max(-127, std::min(value, 127));
 		}
+
+		void drive_pure_pursuit(float forward, float turn) {
+			static_assert(Properties::FINAL_DRIVE_RATIO > 0.0f,
+				"FINAL_DRIVE_RATIO must be positive for replay compensation.");
+			// FINAL_DRIVE_RATIO converts motor speed to wheel speed, so invert it for commands.
+			const float ratio_compensation = 1.0f / Properties::FINAL_DRIVE_RATIO;
+			float left = (forward + turn) * Properties::LEFT_DRIVE_BIAS
+				* ratio_compensation;
+			float right = (forward - turn) * Properties::RIGHT_DRIVE_BIAS
+				* ratio_compensation;
+
+			const float peak_output = std::max(std::abs(left), std::abs(right));
+			if (peak_output > 127.0f) {
+				const float scale = 127.0f / peak_output;
+				left *= scale;
+				right *= scale;
+			}
+
+			BotConnections::left_mg.move(clamp_motor(static_cast<int>(std::lround(left))));
+			BotConnections::right_mg.move(clamp_motor(static_cast<int>(std::lround(right))));
+		}
 	}
 
 	std::vector<RecordingInfo> list_recordings() {
@@ -406,6 +427,8 @@ namespace RecordedAuton {
 			pros::delay(10);
 		}
 		if (!pros::competition::is_autonomous() || pros::competition::is_disabled()) return;
+		Controls::processLondonButtons(0);
+		Controls::processPneumaticsButtons(0);
 
 		const float start_heading = static_cast<float>(BotConnections::imu.get_heading())
 			* static_cast<float>(M_PI) / 180.0f;
@@ -418,6 +441,15 @@ namespace RecordedAuton {
 		std::size_t sample_index = 0;
 		const std::uint32_t start_time = pros::millis();
 		const std::uint32_t final_time = samples.back().time_msec;
+		int endpoint_speed_limit = 0;
+		for (std::vector<Sample>::const_reverse_iterator sample = samples.rbegin();
+			sample != samples.rend(); ++sample) {
+			if (sample->forward_input != 0) {
+				endpoint_speed_limit = std::abs(sample->forward_input);
+				break;
+			}
+		}
+		if (endpoint_speed_limit == 0) endpoint_speed_limit = 40;
 
 		while (pros::competition::is_autonomous() && !pros::competition::is_disabled()) {
 			const std::uint32_t elapsed = pros::millis() - start_time;
@@ -445,6 +477,7 @@ namespace RecordedAuton {
 				? samples[sample_index].buttons
 				: 0;
 			Controls::processLondonButtons(buttons);
+			Controls::processPneumaticsButtons(buttons);
 
 			std::size_t nearest_index = progress_index;
 			float nearest_distance_squared = INFINITY;
@@ -484,7 +517,26 @@ namespace RecordedAuton {
 				? 2.0f * local_right / target_distance_squared
 				: 0.0f;
 
-			int forward = elapsed <= final_time ? samples[sample_index].forward_input : 0;
+			float forward = elapsed <= final_time
+				? static_cast<float>(samples[sample_index].forward_input)
+				: 0.0f;
+			if (elapsed > final_time) {
+				const Point& endpoint = path.back();
+				const float endpoint_dx = endpoint.x - live_x;
+				const float endpoint_dy = endpoint.y - live_y;
+				const float endpoint_distance = std::sqrt(
+					endpoint_dx * endpoint_dx + endpoint_dy * endpoint_dy
+				);
+				const float endpoint_forward = endpoint_dx * std::sin(relative_heading)
+					+ endpoint_dy * std::cos(relative_heading);
+				const float approach_speed = std::min(
+					static_cast<float>(endpoint_speed_limit),
+					std::max(20.0f,
+						endpoint_distance / Properties::RECORDED_AUTON_LOOKAHEAD_CDEG
+							* endpoint_speed_limit)
+				);
+				forward = (endpoint_forward < 0.0f ? -1.0f : 1.0f) * approach_speed;
+			}
 			float turn = forward * curvature * Properties::RECORDED_AUTON_LOOKAHEAD_CDEG;
 			turn = std::max(-MAX_STEERING, std::min(turn, MAX_STEERING));
 
@@ -498,19 +550,13 @@ namespace RecordedAuton {
 				break;
 			}
 
-			const int left = clamp_motor(static_cast<int>(forward + turn));
-			const int right = clamp_motor(static_cast<int>(forward - turn));
-			BotConnections::left_mg.move(
-				static_cast<int>(left * Properties::LEFT_DRIVE_BIAS)
-			);
-			BotConnections::right_mg.move(
-				static_cast<int>(right * Properties::RIGHT_DRIVE_BIAS)
-			);
+			drive_pure_pursuit(forward, turn);
 			pros::delay(Properties::TICK_DELAY_MSEC);
 		}
 
 		BotConnections::left_mg.brake();
 		BotConnections::right_mg.brake();
 		Controls::processLondonButtons(0);
+		Controls::processPneumaticsButtons(0);
 	}
 }
