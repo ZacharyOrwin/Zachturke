@@ -477,6 +477,7 @@ namespace RecordedAuton {
 				? samples[sample_index].buttons
 				: 0;
 			Controls::processLondonButtons(buttons);
+			Controls::processIntakeButtons(buttons);
 			Controls::processPneumaticsButtons(buttons);
 
 			std::size_t nearest_index = progress_index;
@@ -557,6 +558,7 @@ namespace RecordedAuton {
 		BotConnections::left_mg.brake();
 		BotConnections::right_mg.brake();
 		Controls::processLondonButtons(0);
+		Controls::processIntakeButtons(0);
 		Controls::processPneumaticsButtons(0);
 	}
 }

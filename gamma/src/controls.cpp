@@ -1,13 +1,11 @@
 #include "controls.hpp"
-#include "autonomous.hpp"
 #include "bot_connections.hpp"
 #include "properties.hpp"
 #include "recorded_auton.hpp"
-#include "vector2.hpp"
 #include <algorithm>
-#include <cstdlib>
 #include <cstdint>
 #include <cstdio>
+#include <cstdlib>
 
 
 namespace Controls {
@@ -24,14 +22,18 @@ namespace Controls {
 		bool london_position_control_active = false;
 		bool previous_pneumatics_y = false;
 		constexpr std::int32_t LONDON_POSITION_VELOCITY_RPM = 100;
+		constexpr std::int32_t INTAKE_MAX_VELOCITY_RPM = 200;
+		constexpr double LONDON_GEAR_REDUCTION = 84.0 / 12.0;
 
 		int clamp_motor_input(int input) {
 			return std::max(-127, std::min(input, 127));
 		}
 
 		void command_london_position(double position_degrees) {
+			// Targets are lift-output degrees; the motor turns 84/12 times per output turn.
 			const std::int32_t result = BotConnections::LondonLift.move_absolute(
-				position_degrees, LONDON_POSITION_VELOCITY_RPM
+				position_degrees * LONDON_GEAR_REDUCTION,
+				LONDON_POSITION_VELOCITY_RPM
 			);
 			if (result == PROS_ERR) {
 				std::printf("London lift position command failed.\n");
@@ -78,6 +80,23 @@ namespace Controls {
 				}
 			}
 			previous_pneumatics_y = pressed;
+		}
+
+		void process_intake_buttons(std::uint16_t buttons) {
+			const bool forward = (buttons & RecordedAuton::BUTTON_R1) != 0;
+			const bool reverse = (buttons & RecordedAuton::BUTTON_R2) != 0;
+			if (forward == reverse) {
+				BotConnections::intake.brake();
+				return;
+			}
+
+			const std::int32_t velocity = forward
+				? INTAKE_MAX_VELOCITY_RPM
+				: -INTAKE_MAX_VELOCITY_RPM;
+			if (BotConnections::intake.move_velocity(velocity) == PROS_ERR) {
+				std::printf("Intake velocity command failed.\n");
+				BotConnections::intake.brake();
+			}
 		}
 	}
 
@@ -155,16 +174,42 @@ namespace Controls {
 	void processLondon() {
 		pros::Controller& controller = BotConnections::controller;
 		std::uint16_t buttons = 0;
-		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) buttons |= RecordedAuton::BUTTON_L1;
-		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) buttons |= RecordedAuton::BUTTON_L2;
-		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)) buttons |= RecordedAuton::BUTTON_A;
-		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) buttons |= RecordedAuton::BUTTON_B;
-		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_X)) buttons |= RecordedAuton::BUTTON_X;
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L1)) {
+			buttons |= RecordedAuton::BUTTON_L1;
+		}
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_L2)) {
+			buttons |= RecordedAuton::BUTTON_L2;
+		}
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_A)) {
+			buttons |= RecordedAuton::BUTTON_A;
+		}
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_B)) {
+			buttons |= RecordedAuton::BUTTON_B;
+		}
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_X)) {
+			buttons |= RecordedAuton::BUTTON_X;
+		}
 		process_london_buttons(buttons);
 	}
 
 	void processLondonButtons(std::uint16_t buttons) {
 		process_london_buttons(buttons);
+	}
+
+	void processIntake() {
+		pros::Controller& controller = BotConnections::controller;
+		std::uint16_t buttons = 0;
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R1)) {
+			buttons |= RecordedAuton::BUTTON_R1;
+		}
+		if (controller.get_digital(pros::E_CONTROLLER_DIGITAL_R2)) {
+			buttons |= RecordedAuton::BUTTON_R2;
+		}
+		process_intake_buttons(buttons);
+	}
+
+	void processIntakeButtons(std::uint16_t buttons) {
+		process_intake_buttons(buttons);
 	}
 
 	void processPneumatics() {

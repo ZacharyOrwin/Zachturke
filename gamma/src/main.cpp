@@ -91,6 +91,7 @@ void opcontrol() {
 		RecordedAuton::update_driver_recording();
 		processDrive();
 		processLondon();
+		processIntake();
 		processPneumatics();
 		pros::delay(Properties::TICK_DELAY_MSEC);
 	}

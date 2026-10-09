@@ -11,7 +11,7 @@ namespace BotConnections {
 	extern pros::Imu imu;
 	extern pros::Rotation LRODOM;
 	extern pros::Rotation FBODOM;
-	extern pros::Motor intake;
+	extern pros::MotorGroup intake;
 	extern pros::MotorGroup LondonLift;
 	extern pros::adi::Pneumatics london_pneumatic;
 	

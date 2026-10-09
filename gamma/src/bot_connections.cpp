@@ -11,20 +11,16 @@ namespace BotConnections {
 	
 	pros::Controller controller(pros::E_CONTROLLER_MASTER);
 
-	pros::MotorGroup left_mg({-15,-18,-16});
+	pros::MotorGroup left_mg({-15,18,-16});
 	pros::MotorGroup right_mg({-17,-19,10});
 
 	pros::Imu imu(7);
-	pros::Rotation LRODOM(11);
+	pros::Rotation LRODOM(4);
 	pros::Rotation FBODOM(14);
 
-	pros::Motor intake(-10);
+	pros::MotorGroup intake({11,12});
 	pros::MotorGroup LondonLift({2,-1});
-	pros::adi::Pneumatics london_pneumatic('A', false);
-
-
-
-
+	pros::adi::Pneumatics london_pneumatic('H', false);
 
 	void initialize() {
 		imu.reset(true);
@@ -36,11 +32,8 @@ namespace BotConnections {
 		right_mg.set_gearing_all(pros::E_MOTOR_GEAR_BLUE);
 		LondonLift.set_gearing_all(pros::E_MOTOR_GEAR_RED);//84:12
 
-		intake.set_encoder_units(pros::E_MOTOR_ENCODER_ROTATIONS);
-
-		intake.set_gearing(pros::E_MOTOR_GEAR_GREEN);
-
-
-		intake.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+		intake.set_encoder_units_all(pros::E_MOTOR_ENCODER_ROTATIONS);
+		intake.set_gearing_all(pros::E_MOTOR_GEAR_GREEN);
+		intake.set_brake_mode_all(pros::E_MOTOR_BRAKE_HOLD);
 	}
 }
