@@ -19,7 +19,7 @@ namespace BotConnections {
 	pros::Rotation FBODOM(14);
 
 	pros::MotorGroup intake({11,12});
-	pros::MotorGroup LondonLift({2,-1});
+	pros::MotorGroup LondonLift({9,-1});
 	pros::adi::Pneumatics london_pneumatic('H', false);
 
 	void initialize() {
